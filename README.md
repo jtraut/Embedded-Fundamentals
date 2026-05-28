@@ -15,6 +15,6 @@ A single-page reference guide covering the core knowledge areas for embedded fir
 
 ## Viewing
 
-The guide is hosted at the GitHub Pages URL for this repository. Navigate to the root and you will be redirected automatically.
+The guide is hosted at **https://jtraut.github.io/Embedded-Fundamentals/**. Navigate to the root and you will be redirected automatically.
 
 To view locally, open `Embedded_Firmware_Engineer_Fundamentals.html` directly in a browser — no build step required.
