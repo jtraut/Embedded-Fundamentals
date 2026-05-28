@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embedded Firmware / Software Engineer — Fundamentals Reference</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+<style>
+:root {
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --panel-2: #eef1f6;
+  --border: #e2e6ec;
+  --text: #1a1f2b;
+  --text-soft: #5a6473;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --accent-2: #7c3aed;
+  --accent-soft: #eff5ff;
+  --good: #15803d;
+  --good-soft: #ecfdf3;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --bad: #b91c1c;
+  --bad-soft: #fef2f2;
+  --code-bg: #f6f8fa;
+  --label-color: #1e3a8a;
+  --tab-inactive: #5a6473;
+  --tab-active: #1e3a8a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.62; color: var(--text); background: var(--bg);
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- Top tab bar ---------- */
+.tabs-bar {
+  position: sticky; top: 0; z-index: 50; background: var(--panel);
+  border-bottom: 1px solid var(--border); display: flex; align-items: center;
+  padding: 0 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); flex-wrap: wrap;
+}
+.tabs-bar .brand {
+  font-weight: 700; font-size: 14px; color: var(--label-color);
+  padding: 0.85rem 1.25rem 0.85rem 0; margin-right: 1rem;
+  border-right: 1px solid var(--border); letter-spacing: 0.01em;
+}
+.tabs-bar nav { display: flex; gap: 0; flex-wrap: wrap; }
+.tab-btn {
+  background: none; border: none; padding: 0.85rem 1.0rem; font-size: 14px;
+  font-weight: 500; color: var(--tab-inactive); cursor: pointer;
+  border-bottom: 3px solid transparent; transition: color .12s, border-color .12s;
+  font-family: inherit;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--tab-active); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-btn .tab-num {
+  display: inline-block; background: var(--accent-soft); color: var(--accent);
+  width: 1.4rem; height: 1.4rem; text-align: center; line-height: 1.4rem;
+  border-radius: 50%; font-size: 11.5px; font-weight: 700; margin-right: 0.5rem;
+}
+.tab-btn.active .tab-num { background: var(--accent); color: #fff; }
+
+/* ---------- Panels & layout ---------- */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.layout { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px); }
+
+/* ---------- Sidebar TOC ---------- */
+.toc {
+  position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto;
+  background: var(--panel); border-right: 1px solid var(--border);
+  padding: 1rem 0.75rem; font-size: 13.5px;
+}
+.toc-header { padding: 0.25rem 0.5rem 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+.toc-header h2 { margin: 0 0 0.5rem; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-soft); }
+.toc-filter { width: 100%; padding: 0.45rem 0.6rem; font-size: 13.5px; border: 1px solid var(--border); border-radius: 6px; outline: none; transition: border-color .15s; font-family: inherit; }
+.toc-filter:focus { border-color: var(--accent); }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc > ul > li { margin-bottom: 0.6rem; }
+.toc .group-title { display: block; padding: 0.35rem 0.5rem; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-soft); }
+.toc a { display: block; padding: 0.28rem 0.55rem; color: var(--text); border-radius: 5px; border-left: 3px solid transparent; transition: background .1s, border-color .1s, color .1s; }
+.toc a:hover { background: var(--panel-2); text-decoration: none; }
+.toc a.active { background: var(--accent-soft); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
+.toc .hidden { display: none; }
+
+/* ---------- Content ---------- */
+.content { padding: 2rem 2.6rem 5rem; max-width: 960px; }
+.tab-header { margin-bottom: 1.6rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border); }
+.tab-header h1 { margin: 0; font-size: 27px; }
+.tab-header .subtitle { margin: 0.35rem 0 0; color: var(--text-soft); font-size: 15px; }
+h2.section { font-size: 22px; margin-top: 2.6rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border); color: var(--accent); scroll-margin-top: 70px; }
+h3 { font-size: 17.5px; margin-top: 1.8rem; color: var(--accent-2); }
+h4 { font-size: 15px; margin-top: 1.2rem; margin-bottom: 0.4rem; }
+p { margin: 0.6rem 0; }
+.muted { color: var(--muted); }
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.3rem 0; }
+
+code { background: var(--code-bg); color: #b5300f; padding: 1px 5px; border-radius: 3px; font-family: "JetBrains Mono","Fira Code",Consolas,monospace; font-size: 12.8px; }
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 0; margin: 0.9rem 0; position: relative; overflow: auto; }
+pre code.hljs { padding: 13px 15px; font-size: 12.8px; line-height: 1.5; font-family: "JetBrains Mono","Fira Code",Consolas,monospace; background: transparent; }
+.copy-btn { position: absolute; top: 6px; right: 8px; background: var(--panel); color: var(--muted); border: 1px solid var(--border); padding: 3px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; opacity: 0; transition: opacity .15s; }
+pre:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { color: var(--text); }
+.copy-btn.copied { color: var(--good); border-color: var(--good); }
+
+.callout { padding: 0.7rem 0.95rem; border-radius: 7px; margin: 0.9rem 0; border-left: 4px solid var(--accent); background: var(--accent-soft); }
+.callout.tip { border-color: var(--good); background: var(--good-soft); }
+.callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+.callout.bad { border-color: var(--bad); background: var(--bad-soft); }
+.callout strong { color: var(--text); }
+.callout p { margin: 0.3rem 0; }
+
+table { border-collapse: collapse; width: 100%; margin: 0.9rem 0; font-size: 13.4px; }
+th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { background: var(--panel-2); color: var(--label-color); font-weight: 700; }
+tr:nth-child(even) td { background: #fafbfd; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { position: static; height: auto; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+kbd { background: var(--panel-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); font-size: 12px; font-family: monospace; }
+.pill { display: inline-block; background: var(--panel-2); color: var(--accent-2); padding: 1px 8px; border-radius: 10px; font-size: 11px; margin-left: 6px; vertical-align: middle; font-weight: 600; }
+
+/* diagrams */
+figure.diagram { margin: 1.1rem 0; padding: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; }
+figure.diagram svg { display: block; width: 100%; height: auto; }
+figure.diagram figcaption { margin-top: 0.6rem; font-size: 12.5px; color: var(--muted); text-align: center; }
+.ascii { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 15px; font-family: "JetBrains Mono","Fira Code",Consolas,monospace; font-size: 12.5px; line-height: 1.4; overflow-x: auto; white-space: pre; color: #1f2937; margin: 0.9rem 0; }
+.back-top { position: fixed; bottom: 1.4rem; right: 1.4rem; background: var(--accent); color: #fff; border: none; width: 2.6rem; height: 2.6rem; border-radius: 50%; font-size: 1.1rem; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .2s; box-shadow: 0 2px 8px rgba(0,0,0,.18); z-index: 60; }
+.back-top.show { opacity: 0.9; pointer-events: auto; }
+
+/* Q&A collapsibles */
+details.qa { border: 1px solid var(--border); border-radius: 7px; margin: 0.55rem 0; background: var(--panel); overflow: hidden; }
+details.qa summary { cursor: pointer; padding: 0.7rem 0.95rem; font-weight: 600; color: var(--text); list-style: none; }
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::before { content: "\25B8"; color: var(--accent); margin-right: 0.55rem; display: inline-block; transition: transform .15s; }
+details.qa[open] summary::before { transform: rotate(90deg); }
+details.qa[open] summary { border-bottom: 1px solid var(--border); }
+details.qa summary:hover { background: var(--panel-2); }
+details.qa .qa-body { padding: 0.2rem 0.95rem 0.85rem 1.7rem; }
+details.qa .qa-body p:first-child { margin-top: 0.7rem; }
+.qa-tag { display:inline-block; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:0.5rem; background:var(--accent-soft); color:var(--accent); vertical-align:middle; }
+
+/* Glossary */
+.gloss-search { width: 100%; max-width: 440px; padding: 0.55rem 0.7rem; font-size: 14px; border: 1px solid var(--border); border-radius: 7px; outline: none; margin: 0.3rem 0 1.2rem; font-family: inherit; }
+.gloss-search:focus { border-color: var(--accent); }
+.acr-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+.cat-emb { background:#fffbeb; color:#b45309; }
+.cat-cc  { background:#eff5ff; color:#2563eb; }
+.cat-net { background:#ecfdf3; color:#15803d; }
+.cat-ts  { background:#f3e8ff; color:#7c3aed; }
+.gloss-hidden { display: none; }
+.gloss-empty { color: var(--muted); font-style: italic; margin: 1rem 0; display: none; }
+</style>
+</head>
+<body>
+
+<div class="tabs-bar">
+  <span class="brand">Embedded Firmware Engineer — Fundamentals</span>
+  <nav>
+    <button class="tab-btn active" data-tab="embedded"><span class="tab-num">1</span>Embedded &amp; Systems</button>
+    <button class="tab-btn" data-tab="ccpp"><span class="tab-num">2</span>C / C++</button>
+    <button class="tab-btn" data-tab="network"><span class="tab-num">3</span>Networking &amp; OSI</button>
+    <button class="tab-btn" data-tab="timesync"><span class="tab-num">4</span>Time Sync / PTP</button>
+    <button class="tab-btn" data-tab="glossary"><span class="tab-num">5</span>Glossary</button>
+    <button class="tab-btn" data-tab="qa"><span class="tab-num">6</span>Interview Q&amp;A</button>
+  </nav>
+</div>
+
+<div class="tab-panel active" data-tab="embedded">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>On this tab</h2>
+    <input class="toc-filter" type="text" placeholder="Filter sections…">
+  </div>
+  <ul>
+    <li><span class="group-title">The Landscape</span>
+      <ul>
+        <li><a href="#emb-spectrum">MCU → SoC → Linux spectrum</a></li>
+        <li><a href="#emb-baremetal">Bare-metal vs RTOS vs Linux</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Hardware Model</span>
+      <ul>
+        <li><a href="#emb-memmap">Memory map &amp; MMIO</a></li>
+        <li><a href="#emb-registers">Registers &amp; bit fields</a></li>
+        <li><a href="#emb-mmu">MMU vs MPU, virtual memory</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Execution</span>
+      <ul>
+        <li><a href="#emb-boot">The boot chain</a></li>
+        <li><a href="#emb-isr">Interrupts &amp; ISRs</a></li>
+        <li><a href="#emb-dma">DMA</a></li>
+        <li><a href="#emb-concurrency">Concurrency &amp; reentrancy</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Software Stack</span>
+      <ul>
+        <li><a href="#emb-drivers">Device drivers &amp; the kernel</a></li>
+        <li><a href="#emb-buses">On-board buses: I2C/SPI/UART/CAN</a></li>
+        <li><a href="#emb-toolchain">Toolchain, linker, memory sections</a></li>
+        <li><a href="#emb-debug">Debug: JTAG/SWD, power, watchdog</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>Embedded &amp; Systems Foundations</h1>
+    <p class="subtitle">From a single 8-pin microcontroller running bare metal to a multi-core SoC booting full Linux — the mental model, the hardware, and the software stack a firmware engineer reasons about every day.</p>
+  </header>
+
+  <h2 class="section" id="emb-spectrum">The MCU → SoC → Linux spectrum</h2>
+  <p>"Embedded" spans an enormous range of compute. The single most useful orientation is to place a target on the spectrum from a tiny <strong>microcontroller (MCU)</strong> to an application-class <strong>system-on-chip (SoC)</strong>, because that placement decides almost everything else: do you have an MMU, a heap, an OS, a filesystem, threads, virtual memory?</p>
+
+  <table>
+    <tr><th>Property</th><th>MCU (e.g. STM32, ATmega, ESP32)</th><th>Application SoC (e.g. i.MX8, TI AM62, RPi BCM2712)</th></tr>
+    <tr><td>CPU</td><td>Cortex-M / AVR / RISC-V, 1 core, 16 MHz–500 MHz</td><td>Cortex-A (often multi-core), 1–2 GHz, sometimes + Cortex-M coprocessor</td></tr>
+    <tr><td>Memory</td><td>kB of SRAM, on-chip flash (no external DRAM)</td><td>MB–GB of external DDR, eMMC/SD/NAND for storage</td></tr>
+    <tr><td>Memory protection</td><td>MPU (optional, region-based), <em>no</em> virtual memory</td><td>MMU with page tables, virtual address spaces per process</td></tr>
+    <tr><td>Software</td><td>Bare-metal or RTOS (FreeRTOS, Zephyr, ThreadX)</td><td>Linux, QNX, Android, or a hypervisor hosting several</td></tr>
+    <tr><td>Determinism</td><td>Cycle-countable; hard real-time is natural</td><td>Soft real-time by default; needs PREEMPT_RT or a separate MCU for hard RT</td></tr>
+    <tr><td>Boot</td><td>Runs from reset vector in flash in milliseconds</td><td>Multi-stage: ROM → SPL → U-Boot → kernel → init, seconds</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong>Why this matters in interviews and in design:</strong> the first question for any feature is "which side of the MMU line does this run on?" An MMU gives you process isolation and a crash-one-don't-crash-all model; its absence (typical MCU) means one bad pointer can corrupt anything. Many modern automotive/industrial designs are <em>heterogeneous</em>: a Cortex-A cluster running Linux for connectivity and a Cortex-R/M core running an RTOS or bare metal for the hard real-time control loop, sharing memory and talking over a mailbox/RPMsg.
+  </div>
+
+  <h2 class="section" id="emb-baremetal">Bare-metal vs RTOS vs Linux</h2>
+  <p>Three execution models cover almost all firmware. They differ in what schedules your code and what guarantees you get.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="12">
+      <!-- Bare metal -->
+      <rect x="20" y="20" width="200" height="210" rx="8" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="120" y="40" text-anchor="middle" font-weight="bold" fill="#1e3a8a">Bare-metal</text>
+      <rect x="40" y="55" width="160" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="120" y="80" text-anchor="middle">super-loop main()</text>
+      <rect x="40" y="105" width="160" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="120" y="130" text-anchor="middle">ISRs (interrupts)</text>
+      <rect x="40" y="155" width="160" height="55" rx="4" fill="#fde68a" stroke="#b45309"/>
+      <text x="120" y="178" text-anchor="middle">hardware / registers</text>
+      <text x="120" y="196" text-anchor="middle" font-size="10">no OS, you own everything</text>
+
+      <!-- RTOS -->
+      <rect x="260" y="20" width="200" height="210" rx="8" fill="#ecfdf3" stroke="#15803d"/>
+      <text x="360" y="40" text-anchor="middle" font-weight="bold" fill="#15803d">RTOS</text>
+      <rect x="280" y="55" width="75" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="317" y="79" text-anchor="middle" font-size="11">task A</text>
+      <rect x="365" y="55" width="75" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="402" y="79" text-anchor="middle" font-size="11">task B</text>
+      <rect x="280" y="105" width="160" height="40" rx="4" fill="#bbf7d0" stroke="#15803d"/>
+      <text x="360" y="130" text-anchor="middle">preemptive scheduler</text>
+      <rect x="280" y="155" width="160" height="55" rx="4" fill="#fde68a" stroke="#b45309"/>
+      <text x="360" y="186" text-anchor="middle">hardware / registers</text>
+
+      <!-- Linux -->
+      <rect x="500" y="20" width="200" height="210" rx="8" fill="#f3e8ff" stroke="#7c3aed"/>
+      <text x="600" y="40" text-anchor="middle" font-weight="bold" fill="#7c3aed">Linux</text>
+      <rect x="520" y="55" width="75" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="557" y="79" text-anchor="middle" font-size="10">process</text>
+      <rect x="605" y="55" width="75" height="40" rx="4" fill="#fff" stroke="#94a3b8"/>
+      <text x="642" y="79" text-anchor="middle" font-size="10">process</text>
+      <rect x="520" y="105" width="160" height="25" rx="3" fill="#ddd6fe" stroke="#7c3aed"/>
+      <text x="600" y="122" text-anchor="middle" font-size="10">syscall boundary (user/kernel)</text>
+      <rect x="520" y="135" width="160" height="35" rx="4" fill="#c4b5fd" stroke="#7c3aed"/>
+      <text x="600" y="157" text-anchor="middle" font-size="11">kernel + drivers + MMU</text>
+      <rect x="520" y="178" width="160" height="32" rx="4" fill="#fde68a" stroke="#b45309"/>
+      <text x="600" y="198" text-anchor="middle">hardware / registers</text>
+    </svg>
+    <figcaption>Three execution models. Moving right adds abstraction, isolation, and capability — and removes determinism and direct hardware access.</figcaption>
+  </figure>
+
+  <h4>Bare-metal "super-loop"</h4>
+  <p>No operating system. Execution is a <code>while(1)</code> loop polling work, plus interrupt handlers. You control every cycle; there is no scheduler, no heap unless you add one, no notion of a process. Ideal for the smallest, most deterministic, lowest-power designs.</p>
+  <pre><code class="language-c">int main(void) {
+    clock_init();
+    gpio_init();
+    uart_init(115200);
+    timer_start(/*1 kHz*/ 1000);
+
+    for (;;) {                 // the "super-loop"
+        if (flag_tick) {       // set by the timer ISR
+            flag_tick = 0;
+            run_control_loop(); // deterministic 1 kHz cadence
+        }
+        service_uart();        // cooperative, best-effort work
+        __WFI();               // sleep until next interrupt (saves power)
+    }
+}</code></pre>
+
+  <h4>RTOS</h4>
+  <p>A small kernel adds <strong>tasks</strong> (threads) with priorities and a <strong>preemptive scheduler</strong> that guarantees the highest-priority ready task runs. You get blocking primitives (semaphores, queues, mutexes) and bounded, analyzable latency — the "real-time" guarantee. FreeRTOS, Zephyr, ThreadX/Azure RTOS, and QNX (a microkernel) dominate.</p>
+  <pre><code class="language-c">// FreeRTOS: a high-priority control task and a low-priority logging task
+void vControl(void *arg) {
+    TickType_t last = xTaskGetTickCount();
+    for (;;) {
+        read_sensors();
+        update_actuators();
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(1)); // exact 1 kHz, no drift
+    }
+}
+void vLogger(void *arg) {
+    char buf[64];
+    for (;;) {
+        if (xQueueReceive(logQ, buf, portMAX_DELAY) == pdTRUE)
+            uart_write(buf);   // runs only when control task is idle
+    }
+}
+int main(void) {
+    xTaskCreate(vControl, "ctl", 256, NULL, /*prio*/ 5, NULL);
+    xTaskCreate(vLogger,  "log", 256, NULL, /*prio*/ 1, NULL);
+    vTaskStartScheduler();     // never returns
+}</code></pre>
+
+  <h4>Linux (application-class)</h4>
+  <p>A full preemptive multitasking OS with virtual memory, a filesystem, a network stack, and a hard user/kernel boundary. You write most code as ordinary userspace processes and reach hardware through <strong>device drivers</strong> via syscalls (<code>open/read/write/ioctl/mmap</code>). Linux is not hard-real-time out of the box; you add the <code>PREEMPT_RT</code> patch (mainlined progressively) or offload the time-critical loop to a companion MCU/Cortex-R core.</p>
+
+  <div class="callout warn">
+    <strong>The real-time trap.</strong> "Linux" and "real-time" are not contradictory but require care: page faults, the scheduler, and non-deterministic driver code can blow a deadline. For microsecond-class control (motor drives, safety interlocks) the field standard is to keep that loop on a dedicated core/MCU and use Linux for everything else.
+  </div>
+
+  <h2 class="section" id="emb-memmap">The memory map &amp; memory-mapped I/O (MMIO)</h2>
+  <p>On an MCU there is no "I/O instruction" abstraction you normally touch — peripherals are just <strong>addresses</strong>. The CPU's single physical address space is carved into regions: flash (code), SRAM (data), and peripheral registers. Reading or writing a peripheral is reading or writing a specific address. This is <strong>memory-mapped I/O</strong>.</p>
+
+  <div class="ascii">0x0000_0000 ┌──────────────────────┐
+            │  Flash / code (.text)│  ← reset vector lives here
+0x2000_0000 ├──────────────────────┤
+            │  SRAM (.data .bss    │  ← your variables, stack, heap
+            │       stack ↓ heap ↑)│
+0x4000_0000 ├──────────────────────┤
+            │  Peripheral registers│  ← GPIO, UART, timers, ADC…
+            │   (memory-mapped I/O)│     writing here toggles pins
+0xE000_0000 ├──────────────────────┤
+            │  Core private (NVIC, │  ← interrupt controller,
+            │   SysTick, SCB…)     │     system control on Cortex-M
+0xFFFF_FFFF └──────────────────────┘</div>
+
+  <p>Because a peripheral register can change underneath you (hardware sets a "data ready" bit) or have side effects on read/write, the compiler must <em>not</em> optimize those accesses away or reorder them. That is exactly what <code>volatile</code> is for — see the C/C++ tab. A register is almost always reached through a <code>volatile</code> pointer at a fixed address:</p>
+  <pre><code class="language-c">/* Minimal MMIO without a vendor header — STM32-style GPIO toggle */
+#define GPIOA_BASE   0x48000000u
+#define GPIOA_ODR    (*(volatile uint32_t *)(GPIOA_BASE + 0x14)) // output data reg
+
+GPIOA_ODR |=  (1u &lt;&lt; 5);   // set PA5 high
+GPIOA_ODR &amp;= ~(1u &lt;&lt; 5);   // set PA5 low
+
+/* In real code you use the vendor's CMSIS struct overlay: */
+GPIOA-&gt;ODR |= (1u &lt;&lt; 5);   // GPIOA is a volatile struct* at the base address</code></pre>
+
+  <h2 class="section" id="emb-registers">Registers &amp; bit fields</h2>
+  <p>Peripheral control happens one bit at a time. The four canonical operations every firmware engineer must produce instantly:</p>
+  <pre><code class="language-c">reg |=  (1u &lt;&lt; n);              // SET bit n
+reg &amp;= ~(1u &lt;&lt; n);              // CLEAR bit n
+reg ^=  (1u &lt;&lt; n);              // TOGGLE bit n
+if (reg &amp; (1u &lt;&lt; n)) { ... }    // TEST bit n
+
+/* Read-modify-write a multi-bit field safely: */
+#define BAUD_Pos   8u
+#define BAUD_Msk   (0xFu &lt;&lt; BAUD_Pos)
+reg = (reg &amp; ~BAUD_Msk) | ((value &lt;&lt; BAUD_Pos) &amp; BAUD_Msk);</code></pre>
+  <div class="callout warn">
+    <strong>Read-modify-write is not atomic.</strong> <code>reg |= bit;</code> compiles to load → OR → store. If an ISR touches the same register between the load and store, the ISR's change is lost. Use a bit-set/bit-clear register if the hardware provides one (e.g. Cortex-M <code>BSRR</code>), disable interrupts around the RMW, or use atomics.
+  </div>
+
+  <h2 class="section" id="emb-mmu">MMU vs MPU and virtual memory</h2>
+  <p>This is the single biggest dividing line in embedded.</p>
+  <table>
+    <tr><th></th><th>MPU (Memory Protection Unit)</th><th>MMU (Memory Management Unit)</th></tr>
+    <tr><td>Found on</td><td>Cortex-M, Cortex-R</td><td>Cortex-A, x86, anything running Linux</td></tr>
+    <tr><td>Does</td><td>Marks a handful of <em>regions</em> as RO/RW/NX with access permissions</td><td>Full address translation via page tables + permissions</td></tr>
+    <tr><td>Address translation</td><td>None — physical == virtual</td><td>Per-process virtual address space</td></tr>
+    <tr><td>Buys you</td><td>Catch stack overflow, protect code/peripherals, separate RTOS tasks</td><td>Process isolation, demand paging, <code>mmap</code>, copy-on-write, swap</td></tr>
+  </table>
+  <p>Under an MMU, every pointer in your program is a <strong>virtual address</strong> the MMU translates to physical RAM through page tables. Two processes can both use address <code>0x40000</code> and never collide. A bad access raises a page fault the kernel turns into <code>SIGSEGV</code>. On an MPU-only MCU there is no translation: a wild pointer writes real memory, and your only defense is the coarse region permissions you configured.</p>
+
+  <h2 class="section" id="emb-boot">The boot chain</h2>
+  <p>How does a chip go from power-on to running your code? On an MCU it is trivial; on an SoC booting Linux it is a multi-stage relay, each stage just capable enough to load and verify the next.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="11.5">
+      <text x="360" y="18" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="13">Application SoC boot (Linux)</text>
+      <!-- stages -->
+      <g>
+        <rect x="20"  y="35" width="120" height="50" rx="6" fill="#fde68a" stroke="#b45309"/>
+        <text x="80"  y="56" text-anchor="middle" font-weight="bold">Boot ROM</text>
+        <text x="80"  y="72" text-anchor="middle" font-size="10">mask ROM in silicon</text>
+        <rect x="170" y="35" width="120" height="50" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+        <text x="230" y="56" text-anchor="middle" font-weight="bold">SPL / BL2</text>
+        <text x="230" y="72" text-anchor="middle" font-size="10">init DRAM, load U-Boot</text>
+        <rect x="320" y="35" width="120" height="50" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+        <text x="380" y="56" text-anchor="middle" font-weight="bold">U-Boot</text>
+        <text x="380" y="72" text-anchor="middle" font-size="10">load kernel + DTB</text>
+        <rect x="470" y="35" width="120" height="50" rx="6" fill="#f3e8ff" stroke="#7c3aed"/>
+        <text x="530" y="56" text-anchor="middle" font-weight="bold">Kernel</text>
+        <text x="530" y="72" text-anchor="middle" font-size="10">drivers, mount rootfs</text>
+        <rect x="600" y="35" width="100" height="50" rx="6" fill="#ecfdf3" stroke="#15803d"/>
+        <text x="650" y="56" text-anchor="middle" font-weight="bold">init</text>
+        <text x="650" y="72" text-anchor="middle" font-size="10">PID 1, userspace</text>
+      </g>
+      <!-- arrows -->
+      <g stroke="#475569" stroke-width="1.5" marker-end="url(#ah)">
+        <line x1="140" y1="60" x2="168" y2="60"/>
+        <line x1="290" y1="60" x2="318" y2="60"/>
+        <line x1="440" y1="60" x2="468" y2="60"/>
+        <line x1="590" y1="60" x2="598" y2="60"/>
+      </g>
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
+      <text x="360" y="115" text-anchor="middle" font-size="11" fill="#5a6473">each stage verifies the signature of the next → "secure / chain of trust" boot</text>
+
+      <text x="360" y="155" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="13">MCU boot (bare-metal)</text>
+      <rect x="160" y="170" width="170" height="42" rx="6" fill="#fde68a" stroke="#b45309"/>
+      <text x="245" y="187" text-anchor="middle" font-weight="bold">Reset vector</text>
+      <text x="245" y="203" text-anchor="middle" font-size="10">PC ← address @ 0x4</text>
+      <line x1="330" y1="191" x2="378" y2="191" stroke="#475569" stroke-width="1.5" marker-end="url(#ah)"/>
+      <rect x="380" y="170" width="170" height="42" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="465" y="187" text-anchor="middle" font-weight="bold">startup → main()</text>
+      <text x="465" y="203" text-anchor="middle" font-size="10">copy .data, zero .bss</text>
+    </svg>
+    <figcaption>On an MCU, the CPU loads the reset vector and jumps to startup code in milliseconds. On an SoC, an immutable Boot ROM starts a relay (SPL → U-Boot → kernel → init) that can take seconds and usually enforces a cryptographic chain of trust.</figcaption>
+  </figure>
+
+  <p>The <strong>device tree</strong> (DTB) is worth calling out: ARM Linux does not probe most hardware. Instead a data structure describes the board — what peripherals exist, at what addresses, on which interrupts — and the kernel binds drivers to it at boot. It decouples one kernel binary from many boards.</p>
+
+  <h2 class="section" id="emb-isr">Interrupts &amp; the ISR</h2>
+  <p>An <strong>interrupt</strong> lets hardware preempt the CPU asynchronously: a byte arrived on UART, a timer expired, a pin changed. The CPU saves context, jumps to the <strong>Interrupt Service Routine (ISR)</strong> via the vector table, runs it, and returns. Interrupts are why embedded systems can be both responsive and low-power (sleep until something happens).</p>
+  <pre><code class="language-c">volatile uint8_t rx_byte;
+volatile bool    rx_ready;
+
+void USART2_IRQHandler(void) {     // name comes from the vector table
+    if (USART2-&gt;ISR &amp; USART_ISR_RXNE) {
+        rx_byte  = (uint8_t)USART2-&gt;RDR; // reading RDR also clears the flag
+        rx_ready = true;                 // hand off to the main loop
+    }
+}</code></pre>
+  <div class="callout tip">
+    <strong>The golden rules of ISRs.</strong> Keep them short — defer real work to the main loop or a task. Never block, never call <code>malloc</code>/<code>printf</code>, never busy-wait. Share data with the foreground only through <code>volatile</code> variables, lock-free queues, or RTOS "from-ISR" APIs (<code>xQueueSendFromISR</code>). Always clear the interrupt source or it re-fires forever.
+  </div>
+  <p>The <strong>NVIC</strong> (on Cortex-M) prioritizes interrupts and supports nesting: a higher-priority interrupt preempts a lower-priority ISR. Latency — reset-to-handler cycles — is a spec you design against in hard-real-time systems.</p>
+
+  <h2 class="section" id="emb-dma">DMA — moving data without the CPU</h2>
+  <p><strong>Direct Memory Access</strong> is a dedicated engine that copies between memory and peripherals (or memory to memory) <em>without</em> the CPU shuffling each byte. Set up source, destination, and count once; the DMA controller streams the transfer and interrupts you when done. Essential for high-throughput links (Ethernet, audio, ADC sampling) where byte-by-byte CPU copies would saturate the core.</p>
+  <div class="ascii">Without DMA:  Peripheral → CPU register → RAM   (CPU touches every byte)
+With DMA:     Peripheral ───────────────→ RAM   (CPU free; IRQ at end)
+                          ▲
+                       DMA engine</div>
+  <div class="callout warn">
+    <strong>DMA + cache = a classic bug.</strong> On a cached SoC, the CPU may hold a stale copy of a buffer the DMA just overwrote (or vice versa). You must <em>invalidate</em> the cache before reading a DMA-filled buffer and <em>clean/flush</em> it before a DMA reads CPU-written data. Forgetting cache coherency for DMA buffers produces intermittent, maddening corruption.
+  </div>
+
+  <h2 class="section" id="emb-concurrency">Concurrency, reentrancy &amp; shared state</h2>
+  <p>Even single-core embedded systems are concurrent because ISRs preempt the foreground. The bugs are the same family as multithreading: races, torn reads/writes, priority inversion.</p>
+  <ul>
+    <li><strong>Critical sections.</strong> Briefly disable interrupts (or take a mutex under an RTOS) around a read-modify-write of shared state. Keep them as short as possible — they add to interrupt latency.</li>
+    <li><strong>Atomicity of width.</strong> A 32-bit write is atomic on a 32-bit core, but a 64-bit counter is not — an ISR can see a half-updated value. Use <code>&lt;stdatomic.h&gt;</code> or guard it.</li>
+    <li><strong>Priority inversion.</strong> A high-priority task blocks on a mutex held by a low-priority task that a medium task keeps preempting. RTOS mutexes with <em>priority inheritance</em> fix this — famously the bug that hung Mars Pathfinder.</li>
+    <li><strong>Reentrancy.</strong> A function safe to call from both the main loop and an ISR must not rely on shared static state. Prefer pure functions and pass state explicitly.</li>
+  </ul>
+
+  <h2 class="section" id="emb-drivers">Device drivers &amp; the kernel boundary</h2>
+  <p>On Linux, hardware lives behind <strong>drivers</strong> in kernel space; userspace reaches them through file-like interfaces. The three driver classes:</p>
+  <table>
+    <tr><th>Class</th><th>Looks like</th><th>Examples</th></tr>
+    <tr><td>Character device</td><td>Byte stream via <code>/dev/xxx</code>, <code>read/write/ioctl</code></td><td>serial port, GPIO (chardev), I2C, sensors</td></tr>
+    <tr><td>Block device</td><td>Random-access fixed-size blocks, buffered</td><td>eMMC, SD, NVMe, USB storage</td></tr>
+    <tr><td>Network device</td><td>No <code>/dev</code> node; packets via the net stack</td><td>Ethernet MAC, Wi-Fi, modem</td></tr>
+  </table>
+  <p>A key userspace technique is <code>mmap</code> on <code>/dev/mem</code> or a UIO device to map a peripheral's registers straight into a process — letting you do MMIO from userspace for prototyping or for low-latency drivers that bypass the kernel. The user/kernel split means a buggy driver can panic the kernel, whereas a buggy app just gets killed.</p>
+
+  <h2 class="section" id="emb-buses">On-board buses: I2C, SPI, UART, CAN</h2>
+  <p>Before a packet ever hits Ethernet, chips on a board talk over short-range serial buses. Know the trade-offs cold.</p>
+  <table>
+    <tr><th>Bus</th><th>Wires</th><th>Topology / speed</th><th>Use</th></tr>
+    <tr><td><strong>UART</strong></td><td>2 (TX, RX), async</td><td>Point-to-point, ~115 kbps–3 Mbps, no clock</td><td>Consoles, GPS, modems, debug</td></tr>
+    <tr><td><strong>SPI</strong></td><td>4 (SCLK, MOSI, MISO, CS)</td><td>Master + multi-slave, tens of MHz, full-duplex</td><td>Flash, displays, fast ADCs, radios</td></tr>
+    <tr><td><strong>I2C</strong></td><td>2 (SDA, SCL), open-drain</td><td>Multi-drop addressed bus, 100k–3.4M, half-duplex</td><td>Sensors, EEPROM, PMICs (many devices, few pins)</td></tr>
+    <tr><td><strong>CAN</strong></td><td>2 (CAN_H, CAN_L), differential</td><td>Multi-master, arbitrated, robust, ≤1 Mbps (CAN-FD higher)</td><td>Automotive/industrial control networks</td></tr>
+  </table>
+  <p>The mental shortcut: <strong>UART</strong> for simple point-to-point links, <strong>SPI</strong> when you need speed, <strong>I2C</strong> when you need many devices on few pins, <strong>CAN</strong> when you need noise immunity and deterministic multi-node arbitration in a vehicle.</p>
+
+  <h2 class="section" id="emb-toolchain">Toolchain, linker &amp; memory sections</h2>
+  <p>Cross-compilation is the norm: you build on an x86 host for an ARM target. The flow is <em>compile → assemble → link → (objcopy to raw binary) → flash</em>. The <strong>linker script</strong> is uniquely important in embedded because <em>you</em> place sections into the physical memory map.</p>
+  <pre><code class="language-bash"># ARM bare-metal cross toolchain
+arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -O2 -g \
+    -ffunction-sections -fdata-sections \
+    -T stm32.ld -nostartfiles main.c startup.c -o fw.elf
+arm-none-eabi-objcopy -O binary fw.elf fw.bin   # raw image to flash
+arm-none-eabi-size fw.elf                        # how much flash/RAM used</code></pre>
+  <p>Every byte of your program lives in a named <strong>section</strong>, and knowing them is fundamental:</p>
+  <table>
+    <tr><th>Section</th><th>Holds</th><th>Where it lives</th></tr>
+    <tr><td><code>.text</code></td><td>Code + read-only constants</td><td>Flash (executed in place)</td></tr>
+    <tr><td><code>.rodata</code></td><td><code>const</code> data, string literals</td><td>Flash</td></tr>
+    <tr><td><code>.data</code></td><td>Initialized globals (<code>int g = 5;</code>)</td><td>Stored in flash, copied to RAM at startup</td></tr>
+    <tr><td><code>.bss</code></td><td>Zero-initialized globals (<code>int g;</code>)</td><td>RAM, zeroed by startup code</td></tr>
+    <tr><td>stack / heap</td><td>Locals, dynamic allocations</td><td>RAM (grow toward each other)</td></tr>
+  </table>
+  <p>This is why "the .data copy and .bss zero" in startup code matters: the C runtime must populate RAM before <code>main()</code> because flash is read-only.</p>
+
+  <h2 class="section" id="emb-debug">Debug, power &amp; the watchdog</h2>
+  <ul>
+    <li><strong>JTAG / SWD.</strong> Hardware debug ports. SWD (2-wire, ARM) and JTAG (boundary scan) let a probe (J-Link, ST-Link) halt the core, single-step, set breakpoints, and read/write memory and registers — your primary debugger when there is no OS to attach to.</li>
+    <li><strong>printf-debugging without a UART:</strong> semihosting, SWO/ITM trace, or RTT stream logs over the debug link.</li>
+    <li><strong>Watchdog timer.</strong> A hardware countdown you must periodically "kick." If firmware hangs and stops kicking it, the watchdog resets the chip — the last line of defense for an unattended embedded device.</li>
+    <li><strong>Low-power modes.</strong> Sleep/stop/standby trade wake latency for current. Battery designs spend most time asleep, waking on interrupt — which is why ISR-driven (not polling) architecture is the default.</li>
+    <li><strong>Brown-out detection.</strong> Resets the MCU when supply voltage sags, preventing undefined behavior from an underpowered core.</li>
+  </ul>
+</main>
+</div>
+</div>
+
+<div class="tab-panel" data-tab="ccpp">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>On this tab</h2>
+    <input class="toc-filter" type="text" placeholder="Filter sections…">
+  </div>
+  <ul>
+    <li><span class="group-title">Byte Order</span>
+      <ul>
+        <li><a href="#cc-endian">Little- vs Big-Endian</a></li>
+        <li><a href="#cc-detect">Detecting endianness</a></li>
+        <li><a href="#cc-swap">Byte-swapping &amp; network order</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Data Layout</span>
+      <ul>
+        <li><a href="#cc-types">Fixed-width types &amp; sizes</a></li>
+        <li><a href="#cc-align">Alignment &amp; struct packing</a></li>
+        <li><a href="#cc-bitfields">Bit-fields</a></li>
+        <li><a href="#cc-serialize">Serialization done right</a></li>
+        <li><a href="#cc-memcpy">memcpy: use &amp; misuse</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Hardware C</span>
+      <ul>
+        <li><a href="#cc-volatile">volatile</a></li>
+        <li><a href="#cc-const">const, static, extern, restrict</a></li>
+        <li><a href="#cc-bits">Bit manipulation toolkit</a></li>
+        <li><a href="#cc-storage">Memory: stack/heap/static</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">C vs C++</span>
+      <ul>
+        <li><a href="#cc-cvscpp">When to use which</a></li>
+        <li><a href="#cc-cpp-embedded">C++ features for embedded</a></li>
+        <li><a href="#cc-ub">Undefined behavior traps</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>C / C++ for Firmware</h1>
+    <p class="subtitle">The language details that bite at the hardware boundary: byte order, memory layout, <code>volatile</code>, and the discipline that keeps low-level code correct and portable across architectures.</p>
+  </header>
+
+  <h2 class="section" id="cc-endian">Little-Endian vs Big-Endian</h2>
+  <p><strong>Endianness</strong> is the order in which the bytes of a multi-byte value are stored in memory. It only matters for values larger than one byte (a single <code>char</code> has no order). Take the 32-bit value <code>0x0A0B0C0D</code> stored at address <code>0x100</code>:</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="12">
+      <text x="350" y="22" text-anchor="middle" font-weight="bold" font-size="14" fill="#1e3a8a">uint32_t x = 0x0A0B0C0D;</text>
+      <text x="350" y="42" text-anchor="middle" font-size="11" fill="#5a6473">0A = most-significant byte (MSB) · 0D = least-significant byte (LSB)</text>
+
+      <!-- Little endian -->
+      <text x="175" y="78" text-anchor="middle" font-weight="bold" fill="#15803d">Little-Endian (x86, ARM default, RISC-V)</text>
+      <text x="175" y="95" text-anchor="middle" font-size="10.5" fill="#5a6473">little end (LSB) first, at the lowest address</text>
+      <g>
+        <rect x="40" y="105" width="65" height="45" fill="#ecfdf3" stroke="#15803d"/><text x="72" y="132" text-anchor="middle" font-weight="bold">0D</text>
+        <rect x="105" y="105" width="65" height="45" fill="#ecfdf3" stroke="#15803d"/><text x="137" y="132" text-anchor="middle" font-weight="bold">0C</text>
+        <rect x="170" y="105" width="65" height="45" fill="#ecfdf3" stroke="#15803d"/><text x="202" y="132" text-anchor="middle" font-weight="bold">0B</text>
+        <rect x="235" y="105" width="65" height="45" fill="#ecfdf3" stroke="#15803d"/><text x="267" y="132" text-anchor="middle" font-weight="bold">0A</text>
+      </g>
+      <text x="72"  y="166" text-anchor="middle" font-size="10">0x100</text>
+      <text x="137" y="166" text-anchor="middle" font-size="10">0x101</text>
+      <text x="202" y="166" text-anchor="middle" font-size="10">0x102</text>
+      <text x="267" y="166" text-anchor="middle" font-size="10">0x103</text>
+
+      <!-- Big endian -->
+      <text x="525" y="78" text-anchor="middle" font-weight="bold" fill="#b45309">Big-Endian (network order, older MIPS/SPARC, PowerPC)</text>
+      <text x="525" y="95" text-anchor="middle" font-size="10.5" fill="#5a6473">big end (MSB) first, at the lowest address</text>
+      <g>
+        <rect x="390" y="105" width="65" height="45" fill="#fffbeb" stroke="#b45309"/><text x="422" y="132" text-anchor="middle" font-weight="bold">0A</text>
+        <rect x="455" y="105" width="65" height="45" fill="#fffbeb" stroke="#b45309"/><text x="487" y="132" text-anchor="middle" font-weight="bold">0B</text>
+        <rect x="520" y="105" width="65" height="45" fill="#fffbeb" stroke="#b45309"/><text x="552" y="132" text-anchor="middle" font-weight="bold">0C</text>
+        <rect x="585" y="105" width="65" height="45" fill="#fffbeb" stroke="#b45309"/><text x="617" y="132" text-anchor="middle" font-weight="bold">0D</text>
+      </g>
+      <text x="422" y="166" text-anchor="middle" font-size="10">0x100</text>
+      <text x="487" y="166" text-anchor="middle" font-size="10">0x101</text>
+      <text x="552" y="166" text-anchor="middle" font-size="10">0x102</text>
+      <text x="617" y="166" text-anchor="middle" font-size="10">0x103</text>
+
+      <text x="350" y="205" text-anchor="middle" font-size="11" fill="#5a6473">Same number, same register value — only the byte addresses in RAM differ.</text>
+      <text x="350" y="228" text-anchor="middle" font-size="11" fill="#b91c1c">The bug appears only when bytes cross a boundary: a file, a wire, or shared memory between dissimilar machines.</text>
+    </svg>
+    <figcaption>0x0A0B0C0D in memory. Endianness is invisible until raw bytes leave the CPU — which is exactly what firmware does constantly (sensors, protocols, flash, networks).</figcaption>
+  </figure>
+
+  <div class="callout tip">
+    <strong>Mnemonic.</strong> <em>Little</em>-endian stores the <em>little</em> (least-significant) end first. Most chips you will meet — x86, the vast majority of ARM deployments, RISC-V — are little-endian. The notable big-endian world is <strong>network byte order</strong> (TCP/IP), plus legacy MIPS/SPARC/PowerPC and many file formats. ARM and PowerPC are technically bi-endian (switchable), but in practice ARM runs little-endian.</p>
+  </div>
+
+  <h2 class="section" id="cc-detect">Detecting the system's endianness</h2>
+  <p>A staple firmware/interview question. There are three good ways: the classic runtime pointer trick, the union trick, and the modern compile-time macro.</p>
+
+  <h4>1 — The pointer / type-pun method (runtime, classic)</h4>
+  <p>Store a known multi-byte value, then look at its <em>first byte</em> through a <code>char*</code>. A <code>char*</code> always points at the lowest-addressed byte, so its value tells you which end was stored first.</p>
+  <pre><code class="language-c">#include &lt;stdint.h&gt;
+#include &lt;stdio.h&gt;
+
+int is_little_endian(void) {
+    uint32_t x = 1;                       // 0x00000001
+    uint8_t *p = (uint8_t *)&amp;x;           // point at the lowest byte
+    return p[0] == 1;                     // little-endian: LSB (01) is first
+}                                         // big-endian: p[0] == 0, p[3] == 1
+
+int main(void) {
+    printf("%s-endian\n", is_little_endian() ? "little" : "big");
+    // On x86/ARM you'll see: little-endian
+}</code></pre>
+  <p>The picture for <code>uint32_t x = 1;</code>:</p>
+  <div class="ascii">             addr+0  addr+1  addr+2  addr+3
+little-endian:  01      00      00      00     →  *(char*)&x == 0x01
+big-endian:     00      00      00      01     →  *(char*)&x == 0x00</div>
+
+  <h4>2 — The union method (runtime, no aliasing surprises)</h4>
+  <p>A <code>union</code> overlays an <code>int</code> and a byte array on the same storage. Reading the first byte is well-defined "type punning" in C (in C++ it is technically implementation-defined but works on every real compiler).</p>
+  <pre><code class="language-c">int is_little_endian_union(void) {
+    union { uint32_t i; uint8_t c[4]; } u = { 0x01020304u };
+    return u.c[0] == 0x04;     // little-endian stores 04 (LSB) first
+}</code></pre>
+
+  <h4>3 — Compile-time detection (preferred in modern code)</h4>
+  <p>Runtime detection costs nothing at runtime if the compiler can tell you the answer for free. GCC/Clang predefine byte-order macros; C++20 adds a portable <code>std::endian</code>.</p>
+  <pre><code class="language-c">/* C / GCC / Clang — resolved entirely at compile time */
+#if defined(__BYTE_ORDER__) &amp;&amp; __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#  define HOST_LITTLE_ENDIAN 1
+#elif defined(__BYTE_ORDER__) &amp;&amp; __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#  define HOST_LITTLE_ENDIAN 0
+#endif</code></pre>
+  <pre><code class="language-cpp">// C++20 — clean, standard, no preprocessor
+#include &lt;bit&gt;
+constexpr bool host_is_little = (std::endian::native == std::endian::little);
+static_assert(std::endian::native == std::endian::little, "expected LE target");</code></pre>
+  <div class="callout warn">
+    <strong>Don't guess from the CPU name.</strong> "It's ARM, so big-endian" is wrong — ARM ships little-endian almost everywhere. Detect, don't assume, and prefer the compile-time macro so the branch folds away.
+  </div>
+
+  <h2 class="section" id="cc-swap">Byte-swapping &amp; network byte order</h2>
+  <p>The moment a multi-byte value crosses a boundary — a network, a file, a bus between two chips — both sides must agree on byte order. The internet's convention is <strong>big-endian = "network byte order."</strong> The POSIX helpers convert between host and network order; on a big-endian host they are no-ops, on little-endian they swap.</p>
+  <pre><code class="language-c">#include &lt;arpa/inet.h&gt;   // htons/htonl/ntohs/ntohl
+uint16_t port_net = htons(8080);   // host → network (16-bit)
+uint32_t ip_host  = ntohl(packet.src_ip); // network → host (32-bit)
+
+/* Compiler intrinsics for an explicit swap (no header math) */
+uint32_t s = __builtin_bswap32(0x0A0B0C0D); // → 0x0D0C0B0A
+uint16_t h = __builtin_bswap16(0xABCD);      // → 0xCDAB</code></pre>
+  <p>The portable, endianness-<em>independent</em> way to read a value from a byte buffer is to assemble it with shifts. This code produces the same result on any machine because it never depends on the host's storage order:</p>
+  <pre><code class="language-c">/* Read a big-endian uint32 from a wire/file buffer — portable everywhere */
+uint32_t read_be32(const uint8_t *b) {
+    return ((uint32_t)b[0] &lt;&lt; 24) | ((uint32_t)b[1] &lt;&lt; 16) |
+           ((uint32_t)b[2] &lt;&lt;  8) | ((uint32_t)b[3]);
+}
+/* Little-endian variant */
+uint32_t read_le32(const uint8_t *b) {
+    return ((uint32_t)b[3] &lt;&lt; 24) | ((uint32_t)b[2] &lt;&lt; 16) |
+           ((uint32_t)b[1] &lt;&lt;  8) | ((uint32_t)b[0]);
+}</code></pre>
+  <div class="callout tip">
+    <strong>Golden rule of serialization.</strong> Never <code>memcpy</code> or cast a struct directly onto the wire and hope. Always serialize field-by-field with explicit shift/mask (as above). It is immune to endianness, alignment, and padding differences between sender and receiver.
+  </div>
+
+  <h2 class="section" id="cc-types">Fixed-width types &amp; why <code>int</code> betrays you</h2>
+  <p>In portable firmware, the width of <code>int</code>, <code>long</code>, and friends is <em>not</em> guaranteed — only minimum sizes are. On an 8/16-bit MCU <code>int</code> may be 16 bits; on a 32-bit MCU it is 32. Hard-coding assumptions about width is a portability bug. Use <code>&lt;stdint.h&gt;</code>.</p>
+  <pre><code class="language-c">#include &lt;stdint.h&gt;
+uint8_t   reg;        // exactly 8 bits, unsigned — for registers
+int16_t   temp_c10;   // exactly 16 bits, signed
+uint32_t  ticks;      // exactly 32 bits
+uint64_t  ns;         // exactly 64 bits — e.g. PTP timestamps
+uintptr_t addr;       // unsigned int wide enough to hold a pointer
+size_t    n;          // result of sizeof; index/count type
+int32_t   fast = 0;   // int_fast32_t / int_least32_t when you want
+                      // "at least N bits, pick what's fastest"</code></pre>
+  <table>
+    <tr><th>Type</th><th>Guaranteed</th><th>Typical embedded use</th></tr>
+    <tr><td><code>uint8_t</code></td><td>8-bit unsigned</td><td>Register bytes, raw buffers, byte streams</td></tr>
+    <tr><td><code>int32_t</code>/<code>uint32_t</code></td><td>32-bit exact</td><td>Counters, addresses, most arithmetic</td></tr>
+    <tr><td><code>uint64_t</code></td><td>64-bit exact</td><td>Nanosecond timestamps, large accumulators</td></tr>
+    <tr><td><code>size_t</code></td><td>unsigned, ≥16-bit</td><td>Sizes, counts, loop indices over containers</td></tr>
+    <tr><td><code>uintptr_t</code></td><td>holds a pointer</td><td>Pointer↔integer math, alignment checks</td></tr>
+  </table>
+
+  <h2 class="section" id="cc-align">Alignment &amp; struct packing</h2>
+  <p>CPUs read memory most efficiently (or <em>only</em>, on some cores) when a value sits at an address that is a multiple of its size — a 4-byte <code>int</code> at an address divisible by 4. To honor this, the compiler inserts invisible <strong>padding</strong> between struct members. This is why <code>sizeof</code> a struct is often bigger than the sum of its fields.</p>
+  <pre><code class="language-c">struct Bad {        // on a 32-bit target:
+    uint8_t  a;     // offset 0
+    // 3 bytes padding so b is 4-aligned
+    uint32_t b;     // offset 4
+    uint8_t  c;     // offset 8
+    // 3 bytes padding to make the struct's size a multiple of 4
+};                  // sizeof == 12, not 6!
+
+struct Good {       // reorder largest-to-smallest to minimize padding
+    uint32_t b;     // offset 0
+    uint8_t  a;     // offset 4
+    uint8_t  c;     // offset 5
+};                  // sizeof == 8 (still padded to 4-multiple), less waste</code></pre>
+  <div class="ascii">struct Bad layout (12 bytes):
+ byte:  0    1  2  3    4 5 6 7   8    9 10 11
+        [a] [pad pad pad] [  b  ] [c] [pad pad pad]</div>
+  <p>For hardware registers and on-wire structures you sometimes must remove padding entirely with a packed attribute — but doing so creates <em>misaligned</em> members, which is slow and on strict-alignment cores can fault:</p>
+  <pre><code class="language-c">struct __attribute__((packed)) WirePacket {
+    uint8_t  type;
+    uint32_t value;   // now at offset 1 — misaligned!
+};                    // sizeof == 5, no padding</code></pre>
+  <div class="callout warn">
+    <strong>Packed ≠ free.</strong> Accessing a misaligned member in a packed struct emits byte-by-byte loads on most targets and a hard <em>alignment fault</em> on some (older ARM, some DSPs). Prefer explicit serialization (shift/mask) over packed structs for protocols. Reserve packing for cases where the memory layout is dictated by hardware and you control the access.
+  </div>
+
+  <h2 class="section" id="cc-bitfields">Bit-fields</h2>
+  <p>C bit-fields let you name sub-byte fields directly. They are convenient for register maps but their <strong>bit ordering and packing are implementation-defined</strong> — never use them for data that crosses machines.</p>
+  <pre><code class="language-c">typedef union {
+    uint32_t raw;
+    struct {
+        uint32_t enable   : 1;   // bit 0
+        uint32_t mode     : 2;   // bits 1-2
+        uint32_t          : 5;   // reserved (unnamed)
+        uint32_t prescale : 8;   // bits 8-15
+        uint32_t          : 16;  // reserved
+    } bits;
+} CTRL_Reg;
+
+CTRL_Reg ctrl;
+ctrl.raw = 0;
+ctrl.bits.enable = 1;
+ctrl.bits.mode   = 2;     // readable register access
+*(volatile uint32_t*)0x40000000 = ctrl.raw;</code></pre>
+
+  <h2 class="section" id="cc-serialize">Serialization done right</h2>
+  <p>Putting the byte-order and alignment lessons together — the safe way to pack/unpack a protocol header:</p>
+  <pre><code class="language-c">/* Header: type(u8) flags(u8) length(u16 BE) seq(u32 BE) */
+size_t pack_header(uint8_t *out, uint8_t type, uint8_t flags,
+                   uint16_t length, uint32_t seq) {
+    out[0] = type;
+    out[1] = flags;
+    out[2] = (uint8_t)(length &gt;&gt; 8);   // BE: MSB first
+    out[3] = (uint8_t)(length);
+    out[4] = (uint8_t)(seq &gt;&gt; 24);
+    out[5] = (uint8_t)(seq &gt;&gt; 16);
+    out[6] = (uint8_t)(seq &gt;&gt;  8);
+    out[7] = (uint8_t)(seq);
+    return 8;                          // bytes written, fixed regardless of host
+}</code></pre>
+
+  <h2 class="section" id="cc-memcpy"><code>memcpy</code> — use &amp; misuse</h2>
+  <p><code>memcpy(dest, src, n)</code> copies <code>n</code> raw bytes from <code>src</code> to <code>dest</code>. It is the fastest way to move a block of memory and the compiler often lowers it to vectorized instructions. It is also one of the most prolific sources of memory-corruption bugs and CVEs in C, because it blindly trusts the size you give it and knows nothing about the objects involved.</p>
+
+  <h4>Correct usage</h4>
+  <pre><code class="language-c">#include &lt;string.h&gt;
+#include &lt;stdint.h&gt;
+
+uint8_t  rx[64];
+uint8_t  payload[16];
+
+/* 1) Copy a fixed buffer — size from the DESTINATION's sizeof */
+memcpy(payload, &amp;rx[4], sizeof payload);     // 16 bytes, dest can hold them
+
+/* 2) Copy a trivially-copyable struct (POD) */
+typedef struct { uint32_t id; float x, y; } Point;   // no pointers, no padding traps
+Point a = { 1, 2.0f, 3.0f }, b;
+memcpy(&amp;b, &amp;a, sizeof b);                     // fine: plain bytes
+
+/* 3) Bounded copy into a sized buffer — clamp to capacity first */
+size_t to_copy = (len &lt; sizeof payload) ? len : sizeof payload;
+memcpy(payload, src, to_copy);
+
+/* 4) Type-punning safely (no strict-aliasing UB): bytes -&gt; float */
+float f;
+memcpy(&amp;f, &amp;rx[8], sizeof f);                 // the blessed way to reinterpret bytes</code></pre>
+  <div class="callout tip">
+    <strong>Rule of thumb:</strong> take the size from <code>sizeof(destination)</code> (or a clamped length), never from the source, and never hard-code a literal that can drift out of sync with the buffer. <code>memcpy</code> is also the <em>correct</em> tool for type punning — it has no alignment or strict-aliasing pitfalls, unlike a pointer cast.
+  </div>
+
+  <h4>How NOT to use it — the classic bugs</h4>
+  <pre><code class="language-c">/* BUG 1: sizeof on a POINTER, not the array it points to.
+   On most targets a pointer is 4 or 8 bytes — you copy 8 bytes, not 64. */
+void recv(uint8_t *buf) {            // buf is a pointer here, NOT uint8_t[64]
+    uint8_t local[64];
+    memcpy(local, buf, sizeof buf);  // WRONG: sizeof buf == 8 (pointer size)
+    memcpy(local, buf, sizeof local);// RIGHT: 64 (the destination's real size)
+}
+
+/* BUG 2: destination too small -> buffer overflow (stack/heap smash, CVE territory) */
+char small[8];
+const char *msg = "this string is far too long";
+memcpy(small, msg, strlen(msg) + 1); // WRONG: writes 28 bytes into 8 -> corruption
+memcpy(small, msg, sizeof small - 1);// safer, but you must also terminate yourself
+
+/* BUG 3: overlapping regions -> UNDEFINED BEHAVIOR. memcpy assumes NO overlap.
+   Shifting a buffer left/right in place is the canonical trap. */
+uint8_t data[100];
+memcpy(&amp;data[0], &amp;data[4], 96);      // WRONG if regions overlap: UB
+memmove(&amp;data[0], &amp;data[4], 96);     // RIGHT: memmove handles overlap correctly
+
+/* BUG 4: trusting an attacker/peer-supplied length (the Heartbleed pattern) */
+memcpy(out, in, hdr.length);         // WRONG: never copy a length you didn't bound
+memcpy(out, in, MIN(hdr.length, sizeof out)); // RIGHT: clamp to your buffer
+
+/* BUG 5: copying from/to NULL or freed memory */
+memcpy(dest, NULL, n);               // UB even if n could be 0 on some libc paths
+free(p); memcpy(dest, p, n);         // use-after-free</code></pre>
+
+  <pre><code class="language-cpp">// BUG 6 (C++): memcpy over a NON-trivially-copyable type is UNDEFINED BEHAVIOR.
+// It copies bytes but skips constructors and corrupts internal invariants.
+std::string s = "hello", t;
+memcpy(&amp;t, &amp;s, sizeof t);   // WRONG: t now has a bitwise copy of s's pointer ->
+                            // double-free / corruption when both destruct.
+t = s;                      // RIGHT: copy assignment (deep copy)
+
+// Only memcpy types where std::is_trivially_copyable_v&lt;T&gt; is true:
+static_assert(std::is_trivially_copyable_v&lt;Point&gt;);   // ok to memcpy
+// std::string, std::vector, anything with a custom dtor/vptr -> NOT ok.</code></pre>
+  <div class="callout bad">
+    <strong>The four questions to ask before every <code>memcpy</code>:</strong> (1) Is the destination big enough for <code>n</code>? (2) Where did <code>n</code> come from — is it bounded? (3) Can the regions overlap (if so, use <code>memmove</code>)? (4) In C++, is the type trivially copyable? Getting any of these wrong is silent on an MCU (no MMU to fault) and a security hole on Linux. Prefer <code>sizeof(dest)</code>, clamp untrusted lengths, and reach for <code>memmove</code> when in doubt.
+  </div>
+  <div class="callout warn">
+    <strong>Hardware caveat:</strong> do not <code>memcpy</code> to/from memory-mapped device registers. <code>memcpy</code> may use wide/burst/unaligned accesses or reorder writes, which registers often forbid (they may require exact 32-bit accesses in a specific order). Use explicit <code>volatile</code> register writes for MMIO, not <code>memcpy</code>.
+  </div>
+
+  <h2 class="section" id="cc-volatile">volatile — the firmware keyword</h2>
+  <p><code>volatile</code> tells the compiler "this object can change outside the program's control — never cache it in a register, never elide a read or write, never reorder accesses to it." Without it, the optimizer will happily break hardware code.</p>
+  <pre><code class="language-c">/* WRONG — compiler sees STATUS never changes in the loop and may
+   read it once, hoisting the test out → infinite loop. */
+uint32_t *STATUS = (uint32_t *)0x40000000;
+while ((*STATUS &amp; READY) == 0) { }
+
+/* RIGHT — volatile forces a fresh read every iteration. */
+volatile uint32_t *STATUS = (volatile uint32_t *)0x40000000;
+while ((*STATUS &amp; READY) == 0) { }</code></pre>
+  <p>Use <code>volatile</code> for: memory-mapped registers, variables shared with an ISR, and flags touched by signal handlers.</p>
+  <div class="callout bad">
+    <strong>volatile is NOT atomic and NOT a memory barrier across threads.</strong> It prevents the <em>compiler</em> from optimizing accesses away, but it does not order accesses relative to other memory, nor make a read-modify-write atomic, nor flush CPU store buffers on a multi-core SoC. For cross-thread/cross-core sharing use <code>&lt;stdatomic.h&gt;</code> / <code>std::atomic</code> and real memory barriers. <code>volatile</code> is for <em>hardware</em>, atomics are for <em>concurrency</em>.
+  </div>
+
+  <h2 class="section" id="cc-const">const, static, extern, restrict</h2>
+  <table>
+    <tr><th>Keyword</th><th>Meaning at the hardware level</th></tr>
+    <tr><td><code>const</code> (file scope)</td><td>Read-only data → placed in <code>.rodata</code>/flash, saving precious RAM. <code>const volatile</code> = a read-only register that hardware can still change.</td></tr>
+    <tr><td><code>static</code> (file scope)</td><td>Internal linkage — symbol invisible outside the translation unit. The C equivalent of "private."</td></tr>
+    <tr><td><code>static</code> (function local)</td><td>Lifetime = whole program, initialized once, lives in <code>.data</code>/<code>.bss</code> not the stack. Beware: not thread-safe to initialize in C.</td></tr>
+    <tr><td><code>extern</code></td><td>Declares a symbol defined in another translation unit — the glue for multi-file builds.</td></tr>
+    <tr><td><code>restrict</code></td><td>Promise that a pointer is the only way to reach its object → lets the compiler keep values in registers and vectorize. Lying causes UB.</td></tr>
+  </table>
+
+  <h2 class="section" id="cc-bits">Bit manipulation toolkit</h2>
+  <pre><code class="language-c">x |  (1u &lt;&lt; n)         // set bit n
+x &amp; ~(1u &lt;&lt; n)         // clear bit n
+x ^  (1u &lt;&lt; n)         // toggle bit n
+(x &gt;&gt; n) &amp; 1u          // read bit n
+x &amp; (x - 1)           // clear lowest set bit (and test power-of-two: ==0)
+x &amp; -x                // isolate lowest set bit
+__builtin_popcount(x) // count set bits
+__builtin_clz(x)      // count leading zeros (→ log2/round-up-pow2)
+__builtin_ctz(x)      // count trailing zeros (→ index of lowest set bit)
+
+/* Common derived tricks */
+bool is_pow2 = x &amp;&amp; !(x &amp; (x - 1));
+uint32_t align_up = (v + (a - 1)) &amp; ~(a - 1);   // round v up to multiple of pow2 a
+uint32_t rotl32 = (x &lt;&lt; r) | (x &gt;&gt; (32 - r));     // rotate left (r in 1..31)</code></pre>
+
+  <h2 class="section" id="cc-storage">Memory: stack, heap &amp; static — embedded view</h2>
+  <p>Identical concepts to desktop C/C++, but the constraints are sharper because RAM is tiny and there may be no OS to catch overflow.</p>
+  <ul>
+    <li><strong>Stack</strong> — locals and call frames; fast, auto-freed. On an MCU the stack is a fixed region you size in the linker script; deep recursion or big local arrays cause silent overflow that corrupts adjacent RAM. An MPU "guard region" or stack-painting catches it.</li>
+    <li><strong>Heap</strong> — <code>malloc</code>/<code>new</code>. Often <em>banned</em> in safety-critical firmware (MISRA, DO-178C) because fragmentation and allocation failure are non-deterministic. When used, prefer fixed pools and allocate only at init.</li>
+    <li><strong>Static / global</strong> — <code>.data</code>/<code>.bss</code>, fixed address, lives forever. The default for buffers in deterministic systems precisely because their footprint is known at link time.</li>
+  </ul>
+  <div class="callout tip">
+    <strong>Embedded allocation discipline:</strong> allocate everything you need at startup, then never <code>malloc</code> again. A program whose memory map is fully known at link time cannot run out of memory at 3 a.m. in the field.
+  </div>
+
+  <h2 class="section" id="cc-cvscpp">C vs C++ — when to use which</h2>
+  <table>
+    <tr><th></th><th>C</th><th>C++</th></tr>
+    <tr><td>Footprint</td><td>Minimal, predictable; the default for the smallest MCUs and bootloaders</td><td>Larger by default, but <em>zero-overhead</em> features cost nothing if unused</td></tr>
+    <tr><td>Abstraction</td><td>Manual; you build vtables by hand if you want polymorphism</td><td>RAII, templates, constexpr, type-safe enums, namespaces</td></tr>
+    <tr><td>Ecosystem fit</td><td>Linux kernel, most RTOS cores, vendor HALs</td><td>Modern Zephyr apps, Arduino, automotive AUTOSAR Adaptive, larger SoC apps</td></tr>
+    <tr><td>Risk</td><td>Fewer footguns to reason about, but no RAII safety net</td><td>Hidden allocations, exceptions, RTTI — must be disabled deliberately</td></tr>
+  </table>
+  <p>Reality: most firmware is C or a deliberately <em>restricted</em> C++. The progression is C for the lowest layers and bootloaders, restricted C++ for application logic on capable parts.</p>
+
+  <h2 class="section" id="cc-cpp-embedded">C++ features that pay off in embedded</h2>
+  <pre><code class="language-cpp">// 1) constexpr — compute at compile time, store in flash, zero runtime cost
+constexpr uint32_t crc_table_entry(uint8_t i) { /* ... */ }
+
+// 2) Strongly-typed registers via templates — no macro soup, fully inlined
+template &lt;uintptr_t Addr&gt;
+struct Reg {
+    static volatile uint32_t&amp; ref() { return *reinterpret_cast&lt;volatile uint32_t*&gt;(Addr); }
+    static void set(uint32_t m) { ref() |= m; }
+    static void clr(uint32_t m) { ref() &amp;= ~m; }
+};
+using GPIOA_ODR = Reg&lt;0x48000014&gt;;
+GPIOA_ODR::set(1u &lt;&lt; 5);
+
+// 3) RAII for resources without an OS — turn a peripheral on/off by scope
+struct AdcPower {
+    AdcPower()  { RCC-&gt;enable_adc(); }
+    ~AdcPower() { RCC-&gt;disable_adc(); }   // guaranteed off on scope exit
+};
+
+// 4) std::array / std::span — bounds + size without heap (see C++ tab of the
+//    cheatsheet). enum class — no implicit int conversions on register modes.</code></pre>
+  <div class="callout warn">
+    <strong>Embedded C++ is usually compiled with <code>-fno-exceptions -fno-rtti</code></strong> and a freestanding library subset. Exceptions need unwinding tables and a heap-ish runtime; RTTI bloats binaries. Templates and <code>constexpr</code>, by contrast, are pure compile-time and the best part of C++ for this domain.
+  </div>
+
+  <h2 class="section" id="cc-ub">Undefined behavior traps that hurt firmware</h2>
+  <ul>
+    <li><strong>Signed integer overflow is UB.</strong> The optimizer assumes it never happens and can delete your overflow check. Use unsigned for wrap-around arithmetic (counters, hashes).</li>
+    <li><strong>Strict aliasing.</strong> Accessing an object through an incompatible pointer type (other than <code>char*</code>) is UB; this is why the union/memcpy patterns exist for type punning, not raw casts.</li>
+    <li><strong>Uninitialized reads, out-of-bounds, use-after-free</strong> — no MMU on an MCU means no crash, just silent corruption. Build with <code>-Wall -Wextra</code>, run static analysis (cppcheck, clang-tidy, MISRA), and use sanitizers on host builds.</li>
+    <li><strong>Shifting by ≥ width</strong> (<code>x &lt;&lt; 32</code> for a 32-bit type) is UB. Mask the shift amount.</li>
+    <li><strong>Reading a register's reserved bits</strong> and writing them back — always mask to defined fields; reserved bits may have read-as-zero-write-as-zero rules.</li>
+  </ul>
+</main>
+</div>
+</div>
+
+<div class="tab-panel" data-tab="network">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>On this tab</h2>
+    <input class="toc-filter" type="text" placeholder="Filter sections…">
+  </div>
+  <ul>
+    <li><span class="group-title">Models</span>
+      <ul>
+        <li><a href="#net-osi">The 7-layer OSI model</a></li>
+        <li><a href="#net-tcpip">OSI vs TCP/IP &amp; encapsulation</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Transport</span>
+      <ul>
+        <li><a href="#net-tcpudp">TCP vs UDP</a></li>
+        <li><a href="#net-cast">Unicast / Multicast / Broadcast</a></li>
+        <li><a href="#net-addr">MAC, IP, ARP, ports</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Physical Links</span>
+      <ul>
+        <li><a href="#net-ethernet">Ethernet</a></li>
+        <li><a href="#net-wifi">Wi-Fi</a></li>
+        <li><a href="#net-cellular">Cellular</a></li>
+        <li><a href="#net-bluetooth">Bluetooth &amp; BLE</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Automotive</span>
+      <ul>
+        <li><a href="#net-autoeth">Automotive Ethernet (BASE-T1)</a></li>
+        <li><a href="#net-switch">Switches: Marvell / Broadcom</a></li>
+        <li><a href="#net-tsn">VLANs &amp; TSN</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>Networking &amp; the OSI Model</h1>
+    <p class="subtitle">From the 7-layer reference model down to the wire: how TCP and UDP differ, the three cast modes, and the physical links — Ethernet, Wi-Fi, cellular, Bluetooth, and the automotive Ethernet stack a firmware engineer ships on.</p>
+  </header>
+
+  <h2 class="section" id="net-osi">The 7-layer OSI model</h2>
+  <p>The <strong>Open Systems Interconnection</strong> model is a conceptual ladder describing how data moves from an application on one machine, down a stack, across a medium, and back up the stack on the other machine. Each layer serves the one above and is served by the one below. It is a teaching/diagnostic framework — real stacks (TCP/IP) collapse some layers — but every networking conversation references it.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="12.5">
+      <text x="360" y="20" text-anchor="middle" font-weight="bold" font-size="14" fill="#1e3a8a">OSI 7 Layers — top (application) to bottom (wire)</text>
+      <!-- Layer rows -->
+      <g>
+        <!-- L7 -->
+        <rect x="60" y="35" width="600" height="48" rx="5" fill="#f3e8ff" stroke="#7c3aed"/>
+        <text x="80" y="56" font-weight="bold" fill="#7c3aed">7 · Application</text>
+        <text x="80" y="73" font-size="11" fill="#5a6473">app-level protocols apps speak: HTTP, MQTT, DNS, SSH, gRPC</text>
+        <text x="650" y="63" text-anchor="end" font-size="11" fill="#5a6473">data</text>
+        <!-- L6 -->
+        <rect x="60" y="88" width="600" height="44" rx="5" fill="#f3e8ff" stroke="#7c3aed"/>
+        <text x="80" y="108" font-weight="bold" fill="#7c3aed">6 · Presentation</text>
+        <text x="80" y="124" font-size="11" fill="#5a6473">encoding, encryption, compression: TLS, JPEG, ASN.1, UTF-8</text>
+        <!-- L5 -->
+        <rect x="60" y="137" width="600" height="44" rx="5" fill="#f3e8ff" stroke="#7c3aed"/>
+        <text x="80" y="157" font-weight="bold" fill="#7c3aed">5 · Session</text>
+        <text x="80" y="173" font-size="11" fill="#5a6473">setup / teardown / resume of dialogs: RPC, sockets sessions</text>
+        <!-- L4 -->
+        <rect x="60" y="186" width="600" height="46" rx="5" fill="#eff5ff" stroke="#2563eb"/>
+        <text x="80" y="207" font-weight="bold" fill="#2563eb">4 · Transport</text>
+        <text x="80" y="223" font-size="11" fill="#5a6473">end-to-end delivery, ports: TCP, UDP &nbsp;→ unit: segment/datagram</text>
+        <text x="650" y="214" text-anchor="end" font-size="11" fill="#5a6473">segment</text>
+        <!-- L3 -->
+        <rect x="60" y="237" width="600" height="46" rx="5" fill="#eff5ff" stroke="#2563eb"/>
+        <text x="80" y="258" font-weight="bold" fill="#2563eb">3 · Network</text>
+        <text x="80" y="274" font-size="11" fill="#5a6473">logical addressing &amp; routing between networks: IP, ICMP &nbsp;→ packet</text>
+        <text x="650" y="265" text-anchor="end" font-size="11" fill="#5a6473">packet</text>
+        <!-- L2 -->
+        <rect x="60" y="288" width="600" height="46" rx="5" fill="#ecfdf3" stroke="#15803d"/>
+        <text x="80" y="309" font-weight="bold" fill="#15803d">2 · Data Link</text>
+        <text x="80" y="325" font-size="11" fill="#5a6473">framing &amp; MAC addressing on one link: Ethernet, Wi-Fi, switches &nbsp;→ frame</text>
+        <text x="650" y="316" text-anchor="end" font-size="11" fill="#5a6473">frame</text>
+        <!-- L1 -->
+        <rect x="60" y="339" width="600" height="46" rx="5" fill="#fffbeb" stroke="#b45309"/>
+        <text x="80" y="360" font-weight="bold" fill="#b45309">1 · Physical</text>
+        <text x="80" y="376" font-size="11" fill="#5a6473">bits as signals: copper, fiber, radio, PHY chips, connectors &nbsp;→ bits</text>
+        <text x="650" y="367" text-anchor="end" font-size="11" fill="#5a6473">bits</text>
+      </g>
+      <text x="360" y="408" text-anchor="middle" font-size="11.5" fill="#5a6473">Mnemonic: "All People Seem To Need Data Processing" (L7→L1: Application…Physical)</text>
+      <text x="360" y="424" text-anchor="middle" font-size="11.5" fill="#b91c1c">Firmware engineers live mostly in L1–L4; the PHY (L1) and MAC (L2) are silicon you configure.</text>
+    </svg>
+    <figcaption>The 7 layers. Purple = host/software concerns, blue = internetwork, green = single-link, amber = electrical/optical/RF. The right column names the protocol data unit at each layer.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>#</th><th>Layer</th><th>Job in one line</th><th>Address / unit</th></tr>
+    <tr><td>7</td><td>Application</td><td>The protocol the app speaks</td><td>HTTP/MQTT/DNS · data</td></tr>
+    <tr><td>6</td><td>Presentation</td><td>Translate/encrypt/compress the bytes</td><td>TLS, encodings</td></tr>
+    <tr><td>5</td><td>Session</td><td>Open, manage, resume conversations</td><td>session IDs</td></tr>
+    <tr><td>4</td><td>Transport</td><td>End-to-end delivery to the right app</td><td>port · segment/datagram</td></tr>
+    <tr><td>3</td><td>Network</td><td>Address &amp; route across networks</td><td>IP address · packet</td></tr>
+    <tr><td>2</td><td>Data Link</td><td>Frame &amp; deliver on one physical link</td><td>MAC address · frame</td></tr>
+    <tr><td>1</td><td>Physical</td><td>Turn bits into signals on the medium</td><td>— · bits/symbols</td></tr>
+  </table>
+
+  <h2 class="section" id="net-tcpip">OSI vs TCP/IP, and encapsulation</h2>
+  <p>The model the internet actually runs on is the 4-layer <strong>TCP/IP model</strong>, which folds OSI's top three into one "Application" layer and its bottom two into "Link."</p>
+  <div class="ascii">      OSI (7)                 TCP/IP (4)              Example
+  ┌─────────────────┐
+  │ 7 Application   │ ┐
+  │ 6 Presentation  │ ├──→  Application           HTTP, TLS, MQTT, DNS
+  │ 5 Session       │ ┘
+  ├─────────────────┤
+  │ 4 Transport     │ ────→  Transport            TCP, UDP
+  ├─────────────────┤
+  │ 3 Network       │ ────→  Internet             IP, ICMP
+  ├─────────────────┤
+  │ 2 Data Link     │ ┐
+  │ 1 Physical      │ ┴──→  Link / Network Access Ethernet, Wi-Fi PHY/MAC</div>
+
+  <p><strong>Encapsulation</strong> is the actual mechanism: as data descends the stack, each layer wraps the layer above in its own header (and the physical layer adds a trailer). The receiver peels the headers off on the way up. This nesting is why "a packet inside a frame" is literally true.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="11">
+      <text x="360" y="18" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="13">Encapsulation: headers nest as data goes down the stack</text>
+      <!-- app data -->
+      <rect x="300" y="30" width="120" height="26" fill="#f3e8ff" stroke="#7c3aed"/><text x="360" y="48" text-anchor="middle">App data</text>
+      <!-- tcp -->
+      <rect x="250" y="62" width="50" height="26" fill="#eff5ff" stroke="#2563eb"/><text x="275" y="80" text-anchor="middle">TCP</text>
+      <rect x="300" y="62" width="120" height="26" fill="#f3e8ff" stroke="#7c3aed"/><text x="360" y="80" text-anchor="middle">data</text>
+      <text x="445" y="80" font-size="10" fill="#5a6473">= segment</text>
+      <!-- ip -->
+      <rect x="200" y="94" width="50" height="26" fill="#ecfdf3" stroke="#15803d"/><text x="225" y="112" text-anchor="middle">IP</text>
+      <rect x="250" y="94" width="50" height="26" fill="#eff5ff" stroke="#2563eb"/><text x="275" y="112" text-anchor="middle">TCP</text>
+      <rect x="300" y="94" width="120" height="26" fill="#f3e8ff" stroke="#7c3aed"/><text x="360" y="112" text-anchor="middle">data</text>
+      <text x="445" y="112" font-size="10" fill="#5a6473">= packet</text>
+      <!-- eth -->
+      <rect x="150" y="126" width="50" height="26" fill="#fffbeb" stroke="#b45309"/><text x="175" y="144" text-anchor="middle">Eth</text>
+      <rect x="200" y="126" width="50" height="26" fill="#ecfdf3" stroke="#15803d"/><text x="225" y="144" text-anchor="middle">IP</text>
+      <rect x="250" y="126" width="50" height="26" fill="#eff5ff" stroke="#2563eb"/><text x="275" y="144" text-anchor="middle">TCP</text>
+      <rect x="300" y="126" width="120" height="26" fill="#f3e8ff" stroke="#7c3aed"/><text x="360" y="144" text-anchor="middle">data</text>
+      <rect x="420" y="126" width="45" height="26" fill="#fffbeb" stroke="#b45309"/><text x="442" y="144" text-anchor="middle">FCS</text>
+      <text x="490" y="144" font-size="10" fill="#5a6473">= frame</text>
+    </svg>
+    <figcaption>Each layer prepends its header. The Ethernet frame carries an IP packet, which carries a TCP segment, which carries the application's bytes. FCS is the frame's trailing checksum.</figcaption>
+  </figure>
+
+  <h2 class="section" id="net-tcpudp">TCP vs UDP</h2>
+  <p>Both are L4 transports running over IP, distinguished by <strong>port numbers</strong>. The choice between them is one of the most consequential design decisions in networked firmware.</p>
+  <table>
+    <tr><th></th><th>TCP</th><th>UDP</th></tr>
+    <tr><td>Connection</td><td>Connection-oriented — 3-way handshake (SYN, SYN-ACK, ACK) before data</td><td>Connectionless — just send; no setup</td></tr>
+    <tr><td>Reliability</td><td>Guaranteed delivery: ACKs, retransmission, sequence numbers</td><td>Best-effort: lost datagrams are simply gone</td></tr>
+    <tr><td>Ordering</td><td>In-order delivery to the app</td><td>No ordering — datagrams can arrive out of order</td></tr>
+    <tr><td>Flow / congestion control</td><td>Yes — windowing, backs off under loss</td><td>None — you can flood the link (and must self-limit)</td></tr>
+    <tr><td>Boundaries</td><td>Byte stream — no message boundaries (you must frame)</td><td>Preserves message boundaries — one send = one datagram</td></tr>
+    <tr><td>Header overhead</td><td>20+ bytes</td><td>8 bytes</td></tr>
+    <tr><td>Latency</td><td>Higher — handshake + retransmit delays + head-of-line blocking</td><td>Lower — fire and forget</td></tr>
+    <tr><td>Use when</td><td>You need every byte, in order: config, firmware OTA, telemetry upload, shell</td><td>You need speed/timeliness over completeness: video/audio, sensor streams, discovery, PTP, DNS</td></tr>
+  </table>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="11.5">
+      <text x="180" y="18" text-anchor="middle" font-weight="bold" fill="#2563eb" font-size="13">TCP 3-way handshake</text>
+      <line x1="80" y1="30" x2="80" y2="200" stroke="#94a3b8"/><text x="80" y="215" text-anchor="middle" font-size="10">client</text>
+      <line x1="280" y1="30" x2="280" y2="200" stroke="#94a3b8"/><text x="280" y="215" text-anchor="middle" font-size="10">server</text>
+      <line x1="80" y1="45" x2="280" y2="70" stroke="#2563eb" marker-end="url(#a2)"/><text x="180" y="50" text-anchor="middle" font-size="10">SYN</text>
+      <line x1="280" y1="85" x2="80" y2="110" stroke="#2563eb" marker-end="url(#a2)"/><text x="180" y="92" text-anchor="middle" font-size="10">SYN-ACK</text>
+      <line x1="80" y1="125" x2="280" y2="150" stroke="#2563eb" marker-end="url(#a2)"/><text x="180" y="132" text-anchor="middle" font-size="10">ACK</text>
+      <line x1="80" y1="165" x2="280" y2="185" stroke="#15803d" stroke-dasharray="3 2" marker-end="url(#a3)"/><text x="180" y="172" text-anchor="middle" font-size="10" fill="#15803d">data flows</text>
+
+      <text x="540" y="18" text-anchor="middle" font-weight="bold" fill="#b45309" font-size="13">UDP — no handshake</text>
+      <line x1="440" y1="30" x2="440" y2="200" stroke="#94a3b8"/><text x="440" y="215" text-anchor="middle" font-size="10">sender</text>
+      <line x1="640" y1="30" x2="640" y2="200" stroke="#94a3b8"/><text x="640" y="215" text-anchor="middle" font-size="10">receiver</text>
+      <line x1="440" y1="50" x2="640" y2="62" stroke="#b45309" marker-end="url(#a2)"/><text x="540" y="48" text-anchor="middle" font-size="10">datagram 1</text>
+      <line x1="440" y1="78" x2="640" y2="90" stroke="#b45309" marker-end="url(#a2)"/><text x="540" y="76" text-anchor="middle" font-size="10">datagram 2</text>
+      <line x1="440" y1="106" x2="600" y2="118" stroke="#b91c1c" stroke-dasharray="3 2"/><text x="540" y="104" text-anchor="middle" font-size="10" fill="#b91c1c">datagram 3 (lost — no resend)</text>
+      <line x1="440" y1="140" x2="640" y2="152" stroke="#b45309" marker-end="url(#a2)"/><text x="540" y="138" text-anchor="middle" font-size="10">datagram 4</text>
+      <defs>
+        <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+        <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#15803d"/></marker>
+      </defs>
+    </svg>
+    <figcaption>TCP pays a round-trip to establish a reliable, ordered byte stream. UDP sends immediately and accepts loss — the right trade when a late packet is worse than a lost one (live media, time sync).</figcaption>
+  </figure>
+  <div class="callout tip">
+    <strong>The firmware lens.</strong> Time-critical and streaming traffic — PTP/gPTP, audio/video, lidar/radar point clouds, control heartbeats — almost always rides UDP (or raw L2), because retransmitting stale data is useless. TCP is for the things that must be exact and complete: firmware images, config, logs. Many modern systems also use <strong>QUIC</strong> (reliable streams over UDP) to get TCP's guarantees without its handshake/head-of-line cost.
+  </div>
+
+  <h2 class="section" id="net-cast">Unicast vs Multicast vs Broadcast</h2>
+  <p>Three ways to address <em>who</em> receives a transmission — a core distinction in any shared-medium or switched network.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="11">
+      <!-- unicast -->
+      <text x="120" y="20" text-anchor="middle" font-weight="bold" fill="#2563eb">Unicast (1→1)</text>
+      <circle cx="60" cy="60" r="16" fill="#2563eb"/><text x="60" y="64" text-anchor="middle" fill="#fff" font-size="10">S</text>
+      <circle cx="180" cy="40" r="14" fill="#bbf7d0" stroke="#15803d"/><text x="180" y="44" text-anchor="middle" font-size="10">A</text>
+      <circle cx="180" cy="80" r="14" fill="#e5e7eb" stroke="#9ca3af"/><text x="180" y="84" text-anchor="middle" font-size="10">B</text>
+      <circle cx="180" cy="120" r="14" fill="#e5e7eb" stroke="#9ca3af"/><text x="180" y="124" text-anchor="middle" font-size="10">C</text>
+      <line x1="76" y1="56" x2="166" y2="42" stroke="#2563eb" stroke-width="2" marker-end="url(#u)"/>
+      <text x="120" y="155" text-anchor="middle" font-size="10" fill="#5a6473">one specific recipient</text>
+
+      <!-- multicast -->
+      <text x="360" y="20" text-anchor="middle" font-weight="bold" fill="#7c3aed">Multicast (1→group)</text>
+      <circle cx="300" cy="60" r="16" fill="#7c3aed"/><text x="300" y="64" text-anchor="middle" fill="#fff" font-size="10">S</text>
+      <circle cx="420" cy="40" r="14" fill="#ddd6fe" stroke="#7c3aed"/><text x="420" y="44" text-anchor="middle" font-size="10">A</text>
+      <circle cx="420" cy="80" r="14" fill="#e5e7eb" stroke="#9ca3af"/><text x="420" y="84" text-anchor="middle" font-size="10">B</text>
+      <circle cx="420" cy="120" r="14" fill="#ddd6fe" stroke="#7c3aed"/><text x="420" y="124" text-anchor="middle" font-size="10">C</text>
+      <line x1="316" y1="56" x2="406" y2="42" stroke="#7c3aed" stroke-width="2" marker-end="url(#m)"/>
+      <line x1="316" y1="62" x2="406" y2="120" stroke="#7c3aed" stroke-width="2" marker-end="url(#m)"/>
+      <text x="360" y="155" text-anchor="middle" font-size="10" fill="#5a6473">only subscribers (A, C) get it</text>
+
+      <!-- broadcast -->
+      <text x="600" y="20" text-anchor="middle" font-weight="bold" fill="#b45309">Broadcast (1→all)</text>
+      <circle cx="540" cy="60" r="16" fill="#b45309"/><text x="540" y="64" text-anchor="middle" fill="#fff" font-size="10">S</text>
+      <circle cx="660" cy="40" r="14" fill="#fde68a" stroke="#b45309"/><text x="660" y="44" text-anchor="middle" font-size="10">A</text>
+      <circle cx="660" cy="80" r="14" fill="#fde68a" stroke="#b45309"/><text x="660" y="84" text-anchor="middle" font-size="10">B</text>
+      <circle cx="660" cy="120" r="14" fill="#fde68a" stroke="#b45309"/><text x="660" y="124" text-anchor="middle" font-size="10">C</text>
+      <line x1="556" y1="56" x2="646" y2="42" stroke="#b45309" stroke-width="2" marker-end="url(#b)"/>
+      <line x1="556" y1="60" x2="646" y2="80" stroke="#b45309" stroke-width="2" marker-end="url(#b)"/>
+      <line x1="556" y1="64" x2="646" y2="120" stroke="#b45309" stroke-width="2" marker-end="url(#b)"/>
+      <text x="600" y="155" text-anchor="middle" font-size="10" fill="#5a6473">every node on the segment</text>
+      <defs>
+        <marker id="u" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#2563eb"/></marker>
+        <marker id="m" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#7c3aed"/></marker>
+        <marker id="b" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#b45309"/></marker>
+      </defs>
+    </svg>
+    <figcaption>Three delivery modes. (IPv6 replaces broadcast with multicast and adds <em>anycast</em> — deliver to the nearest one of a group.)</figcaption>
+  </figure>
+  <table>
+    <tr><th>Mode</th><th>Targets</th><th>Addressing</th><th>Typical use</th></tr>
+    <tr><td>Unicast</td><td>One specific host</td><td>That host's MAC/IP</td><td>Normal point-to-point traffic</td></tr>
+    <tr><td>Multicast</td><td>A subscribed group</td><td>Group address (IPv4 224.0.0.0/4; MAC 01:00:5E…)</td><td>Video distribution, service discovery (mDNS), <strong>gPTP/AVB</strong>, DDS (ROS 2, automotive middleware)</td></tr>
+    <tr><td>Broadcast</td><td>Every node on the segment</td><td>255.255.255.255 / MAC FF:FF:FF:FF:FF:FF</td><td>ARP, DHCP discovery; IPv4 only</td></tr>
+  </table>
+  <div class="callout tip">
+    <strong>Why multicast matters in vehicles/robots:</strong> one sensor publishing to many consumers (perception, logging, control) should not unicast N copies. Multicast sends once and the switch replicates only to ports that joined the group (via IGMP snooping) — efficient and the basis of AVB/TSN media and gPTP time distribution.
+  </div>
+
+  <h2 class="section" id="net-addr">MAC, IP, ARP &amp; ports — who's who</h2>
+  <ul>
+    <li><strong>MAC address (L2)</strong> — 48-bit hardware address burned into the NIC (e.g. <code>02:42:ac:11:00:02</code>). Flat, local to one link, used by switches to forward frames.</li>
+    <li><strong>IP address (L3)</strong> — logical, hierarchical, routable address (IPv4 <code>192.168.1.10</code> or IPv6). Can change; identifies a host across networks.</li>
+    <li><strong>ARP</strong> — Address Resolution Protocol maps "I know the IP, what's the MAC?" on a local segment. It's a broadcast question ("who has 192.168.1.1?") answered by unicast.</li>
+    <li><strong>Port (L4)</strong> — 16-bit number identifying which application/socket on a host (TCP 80 = HTTP, 22 = SSH; UDP 53 = DNS, 319/320 = PTP). The tuple {src IP, src port, dst IP, dst port, protocol} uniquely identifies a flow.</li>
+  </ul>
+  <p>A switch (L2) forwards by MAC and learns which MAC is on which port. A router (L3) forwards by IP between different networks and decrements TTL. NAT rewrites addresses/ports at the boundary between private and public IP space.</p>
+
+  <h2 class="section" id="net-ethernet">Ethernet (L1/L2)</h2>
+  <p>The dominant wired LAN technology and the L2 framing most embedded networking builds on. Key facts to have at your fingertips:</p>
+  <ul>
+    <li><strong>Frame format:</strong> preamble → dest MAC → src MAC → EtherType/length → payload (46–1500 B) → FCS (CRC-32). EtherType says what's inside (0x0800 = IPv4, 0x86DD = IPv6, 0x8100 = VLAN tag, 0x88F7 = PTP).</li>
+    <li><strong>MTU</strong> is classically 1500 bytes; jumbo frames extend it. Anything larger must be fragmented at L3.</li>
+    <li><strong>Switched &amp; full-duplex</strong> today — the old CSMA/CD collision handling of shared-medium Ethernet is historical; modern links are point-to-point to a switch, so no collisions.</li>
+    <li><strong>PHY vs MAC:</strong> the <strong>MAC</strong> (often in the SoC) handles framing; the <strong>PHY</strong> chip drives the actual signal on copper/fiber. They connect over MII/RMII/RGMII/SGMII. This split is exactly where firmware lives — you bring up the MAC and configure the PHY over MDIO.</li>
+    <li><strong>Speeds:</strong> 10/100 Mb (Fast), 1G (Gigabit), 2.5/5/10G and beyond, plus the single-pair automotive variants below.</li>
+  </ul>
+
+  <h2 class="section" id="net-wifi">Wi-Fi (IEEE 802.11)</h2>
+  <p>Wireless L1/L2 sharing the same upper stack as Ethernet. The headlines:</p>
+  <ul>
+    <li><strong>Generations:</strong> 802.11n (Wi-Fi 4), 11ac (Wi-Fi 5), 11ax (Wi-Fi 6/6E adding 6 GHz), 11be (Wi-Fi 7). Bands: 2.4 GHz (longer range, more congested), 5 GHz (faster, shorter), 6 GHz (new, clean).</li>
+    <li><strong>Half-duplex shared medium</strong> using CSMA/CA (collision <em>avoidance</em>) — stations listen and back off because they can't detect collisions while transmitting. This makes latency variable — a concern for real-time use.</li>
+    <li><strong>Association &amp; security:</strong> a station associates with an access point; WPA2/WPA3 handle authentication and encryption (L2 crypto, distinct from TLS at L6).</li>
+    <li><strong>Embedded reality:</strong> Wi-Fi modules (ESP32, TI CC32xx, Infineon/Cypress) expose an SDIO/SPI/UART interface and run their own firmware; your application talks sockets while the module handles the radio.</li>
+  </ul>
+
+  <h2 class="section" id="net-cellular">Cellular (3GPP)</h2>
+  <ul>
+    <li><strong>Generations:</strong> 4G LTE, 5G NR (sub-6 GHz and mmWave). For IoT specifically: <strong>LTE-M (Cat-M1)</strong> and <strong>NB-IoT</strong> — low-power, low-bandwidth profiles for battery devices and deep-coverage sensors.</li>
+    <li><strong>Architecture:</strong> the device (UE) attaches to a base station (eNodeB/gNodeB) and gets an IP address from the operator's core network. Above IP, your stack is unchanged.</li>
+    <li><strong>Embedded reality:</strong> a cellular <em>modem module</em> (Quectel, u-blox, Telit, Sierra) speaks <strong>AT commands</strong> over UART/USB or exposes a PPP/QMI network interface. SIM/eSIM provisions identity. You manage signal quality, registration, and reconnection in firmware.</li>
+    <li><strong>5G features relevant to embedded:</strong> URLLC (ultra-reliable low-latency) and network slicing target industrial/automotive control; mMTC targets massive sensor density.</li>
+  </ul>
+
+  <h2 class="section" id="net-bluetooth">Bluetooth &amp; BLE</h2>
+  <p>Short-range 2.4 GHz wireless with two distinct stacks under one brand:</p>
+  <table>
+    <tr><th></th><th>Bluetooth Classic (BR/EDR)</th><th>Bluetooth Low Energy (BLE)</th></tr>
+    <tr><td>Optimized for</td><td>Continuous streams (audio, serial)</td><td>Tiny, infrequent data; battery life</td></tr>
+    <tr><td>Topology</td><td>Piconet, point-to-point</td><td>Star + mesh (Bluetooth Mesh)</td></tr>
+    <tr><td>Core abstraction</td><td>RFCOMM / profiles (A2DP, HFP)</td><td><strong>GATT</strong>: services &amp; characteristics over ATT</td></tr>
+    <tr><td>Use</td><td>Headphones, car audio, keyboards</td><td>Wearables, sensors, beacons, config/commissioning</td></tr>
+  </table>
+  <p>For firmware, BLE's <strong>GATT</strong> model is the thing to know: a peripheral exposes <em>services</em> containing <em>characteristics</em> (named, typed values with read/write/notify properties) that a central reads, writes, or subscribes to. It is the de-facto way phones talk to embedded devices for setup and telemetry.</p>
+
+  <h2 class="section" id="net-autoeth">Automotive Ethernet (single-pair BASE-T1)</h2>
+  <p>Cars are moving from a tangle of CAN/LIN/FlexRay buses to an Ethernet backbone, because cameras, lidar, radar, and zonal architectures need bandwidth and a uniform IP stack. Automotive Ethernet keeps standard Ethernet framing but uses a <strong>single unshielded twisted pair</strong> (weight and cost matter in a car) and new PHYs.</p>
+  <table>
+    <tr><th>Standard</th><th>IEEE</th><th>Speed</th><th>Role</th></tr>
+    <tr><td><strong>10BASE-T1S</strong></td><td>802.3cg (2019)</td><td>10 Mb/s</td><td>Short-reach <em>multidrop</em> — several nodes on one pair; replaces CAN/LIN for body/sensor zones</td></tr>
+    <tr><td><strong>100BASE-T1</strong></td><td>802.3bw</td><td>100 Mb/s</td><td>Point-to-point; cameras, infotainment, replaces MOST/LVDS</td></tr>
+    <tr><td><strong>1000BASE-T1</strong></td><td>802.3bp</td><td>1 Gb/s</td><td>ADAS, backbone links, high-bandwidth sensors</td></tr>
+    <tr><td><strong>MultiGBASE-T1</strong></td><td>802.3ch</td><td>2.5 / 5 / 10 Gb/s</td><td>Lidar, sensor fusion, central compute links</td></tr>
+  </table>
+  <div class="callout tip">
+    <strong>Note the "T1".</strong> The <em>1</em> means one twisted pair (vs <code>T</code>/<code>T4</code> = four pairs in office Ethernet). <strong>10BASE-T1S</strong> is special: the <em>S</em> (short) variant supports a multidrop bus topology — multiple ECUs sharing one pair with PLCA (a collision-avoidance scheme) — which is what lets Ethernet finally displace CAN for low-speed nodes.
+  </div>
+
+  <h2 class="section" id="net-switch">Switches &amp; PHYs: Marvell / Broadcom / NXP</h2>
+  <p>A zonal/automotive Ethernet network is built around <strong>managed switch ICs</strong> and <strong>PHY transceivers</strong>. The firmware engineer's job is bringing these up and configuring forwarding, VLANs, and TSN features over a management interface (MDIO/SPI/I2C and SDKs).</p>
+  <ul>
+    <li><strong>Marvell</strong> — the <em>Prestera</em> and automotive <em>Brightlane</em> families; long-standing <em>88Exxxx</em> switch and PHY lines (e.g. 88Q-series automotive switches/PHYs) widely used in vehicles.</li>
+    <li><strong>Broadcom</strong> — <em>BCM</em> automotive switches and PHYs (e.g. BCM89xxx) plus the broad <em>StrataConnect/StrataXGS</em> switching portfolio in networking gear.</li>
+    <li><strong>NXP, Microchip (LAN9000/KSZ), TI (DP83-series PHYs), Realtek</strong> round out common embedded switch/PHY silicon.</li>
+  </ul>
+  <p>What a managed switch gives you that a dumb hub does not: per-port VLAN membership, MAC learning tables, port mirroring (for diagnostics), QoS/priority queues, IGMP snooping (so multicast only goes to subscribers), and — critically for vehicles — <strong>TSN</strong> scheduling and PTP/gPTP hardware timestamping in the MAC/PHY.</p>
+
+  <h2 class="section" id="net-tsn">VLANs &amp; Time-Sensitive Networking (TSN)</h2>
+  <p><strong>VLAN (802.1Q)</strong> tags a frame with a 12-bit VLAN ID and a 3-bit priority (PCP), letting one physical network carry isolated virtual networks and prioritized traffic classes. This is the foundation that TSN builds on.</p>
+  <p><strong>TSN</strong> is a set of IEEE 802.1 amendments that add <em>determinism</em> to standard Ethernet — bounded latency and zero congestion loss for critical traffic — so a single Ethernet backbone can carry both best-effort data and hard-real-time control. The pillars:</p>
+  <table>
+    <tr><th>Standard</th><th>Provides</th></tr>
+    <tr><td><strong>802.1AS</strong> (gPTP)</td><td>Network-wide time synchronization — the clock everything else schedules against (see Time Sync tab)</td></tr>
+    <tr><td><strong>802.1Qbv</strong></td><td>Time-Aware Shaper — gated transmission windows so critical traffic gets the wire at exact times</td></tr>
+    <tr><td><strong>802.1Qbu / 802.3br</strong></td><td>Frame preemption — a high-priority frame interrupts a low-priority one mid-transmission</td></tr>
+    <tr><td><strong>802.1CB</strong></td><td>Frame replication &amp; elimination for reliability (send over redundant paths)</td></tr>
+    <tr><td><strong>802.1Qav</strong></td><td>Credit-based shaper (AVB heritage) for bandwidth reservation of audio/video</td></tr>
+  </table>
+  <div class="callout tip">
+    <strong>The big picture:</strong> TSN + automotive Ethernet + gPTP together replace the dedicated deterministic buses (FlexRay, CAN) with one converged, time-synchronized Ethernet fabric. That is why time synchronization (next tab) is not a niche topic — it is the heartbeat the whole deterministic network is scheduled around.
+  </div>
+</main>
+</div>
+</div>
+
+<div class="tab-panel" data-tab="timesync">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>On this tab</h2>
+    <input class="toc-filter" type="text" placeholder="Filter sections…">
+  </div>
+  <ul>
+    <li><span class="group-title">Motivation</span>
+      <ul>
+        <li><a href="#ts-why">Why time sync is safety-critical</a></li>
+        <li><a href="#ts-ntp-ptp">NTP vs PTP — accuracy tiers</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">PTP / IEEE 1588</span>
+      <ul>
+        <li><a href="#ts-1588">IEEE 1588 PTP overview</a></li>
+        <li><a href="#ts-clocks">Clock roles &amp; hierarchy</a></li>
+        <li><a href="#ts-bmca">BMCA: electing the grandmaster</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">The Mechanism</span>
+      <ul>
+        <li><a href="#ts-exchange">Sync message exchange</a></li>
+        <li><a href="#ts-math">Offset &amp; delay math</a></li>
+        <li><a href="#ts-onestep">One-step vs two-step</a></li>
+        <li><a href="#ts-hwts">Hardware timestamping</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Profiles</span>
+      <ul>
+        <li><a href="#ts-gptp">802.1AS / gPTP</a></li>
+        <li><a href="#ts-profiles">Other profiles &amp; practice</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>Time Synchronization &amp; PTP</h1>
+    <p class="subtitle">How distributed, time- and safety-critical systems agree on a single clock to sub-microsecond precision — IEEE 1588 PTP, 802.1AS gPTP, grandmasters and slaves, the four-message exchange, and one-step vs two-step.</p>
+  </header>
+
+  <h2 class="section" id="ts-why">Why time synchronization is safety-critical</h2>
+  <p>In a distributed embedded system — a car, a robot, a power grid relay, a factory cell — many nodes sense and act independently. If their clocks disagree, the system reasons about the world incorrectly. Concrete consequences:</p>
+  <ul>
+    <li><strong>Sensor fusion.</strong> Fusing a lidar point and a camera frame requires knowing they were captured at the <em>same</em> instant. A 1 ms timing error on a vehicle moving 30 m/s is a 3 cm position error — and that compounds across sensors.</li>
+    <li><strong>Coordinated actuation.</strong> Multiple motor controllers or braking actuators must act in lockstep; skew becomes jitter, instability, or a safety hazard.</li>
+    <li><strong>Ordering of events / forensics.</strong> Correlating logs across ECUs after an incident requires a common timeline; unsynchronized timestamps make causality unrecoverable.</li>
+    <li><strong>Deterministic scheduling (TSN).</strong> Time-Aware Shaping (802.1Qbv) opens transmission gates at exact instants network-wide — which is only meaningful if every switch shares one clock.</li>
+  </ul>
+  <div class="callout warn">
+    <strong>Why not just use the same crystal?</strong> Every node has its own oscillator, and crystals drift with temperature and age — typically tens of parts-per-million. At 50 ppm, two free-running clocks diverge by 50 µs <em>every second</em>. Synchronization continuously corrects this drift against a common reference.
+  </div>
+
+  <h2 class="section" id="ts-ntp-ptp">NTP vs PTP — the accuracy tiers</h2>
+  <table>
+    <tr><th></th><th>NTP (Network Time Protocol)</th><th>PTP (Precision Time Protocol, IEEE 1588)</th></tr>
+    <tr><td>Typical accuracy</td><td>1–50 ms over the internet; ~1 ms on a LAN</td><td>Sub-microsecond on a LAN; nanoseconds with good hardware</td></tr>
+    <tr><td>Timestamping</td><td>Software, in the OS/app — jittery</td><td><strong>Hardware</strong> in the MAC/PHY — removes OS jitter</td></tr>
+    <tr><td>Scope</td><td>Global, hierarchical (stratum) over WAN</td><td>Local network / managed domain</td></tr>
+    <tr><td>Network help</td><td>None assumed</td><td>Switches participate (boundary/transparent clocks)</td></tr>
+    <tr><td>Use</td><td>Wall-clock on servers/PCs</td><td>Industrial, automotive, telecom, AV, measurement</td></tr>
+  </table>
+  <p>The leap from milliseconds (NTP) to nanoseconds (PTP) comes almost entirely from <strong>where the timestamp is taken</strong>. NTP stamps in software, so OS scheduling and stack traversal add unpredictable delay. PTP stamps the packet in hardware at the instant it crosses the wire, eliminating that jitter — the single most important idea on this tab.</p>
+
+  <h2 class="section" id="ts-1588">IEEE 1588 PTP — overview</h2>
+  <p><strong>IEEE 1588</strong> (current edition 1588-2019, "PTPv2.1"; the widely-deployed base is PTPv2 / 1588-2008) defines the Precision Time Protocol. The core idea: one node is the authoritative time source — the <strong>grandmaster</strong> — and all others discipline their clocks to it by measuring the message <em>offset</em> and the network <em>propagation delay</em> between them, then correcting for both.</p>
+  <p>PTP runs over UDP (ports 319 for event messages, 320 for general messages) or directly over Ethernet (EtherType 0x88F7). It typically uses multicast so one Sync serves many listeners.</p>
+
+  <h2 class="section" id="ts-clocks">Clock roles &amp; the hierarchy</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="11.5">
+      <text x="360" y="18" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="13">PTP clock hierarchy</text>
+      <!-- GM -->
+      <rect x="290" y="30" width="140" height="44" rx="6" fill="#fde68a" stroke="#b45309"/>
+      <text x="360" y="50" text-anchor="middle" font-weight="bold">Grandmaster (GM)</text>
+      <text x="360" y="66" text-anchor="middle" font-size="10">best clock, e.g. GPS-disciplined</text>
+      <!-- TC -->
+      <rect x="120" y="120" width="150" height="48" rx="6" fill="#ddd6fe" stroke="#7c3aed"/>
+      <text x="195" y="140" text-anchor="middle" font-weight="bold">Transparent Clock</text>
+      <text x="195" y="156" text-anchor="middle" font-size="10">switch: measures &amp; adds</text>
+      <text x="195" y="166" text-anchor="middle" font-size="10">its own residence time</text>
+      <!-- BC -->
+      <rect x="450" y="120" width="150" height="48" rx="6" fill="#bbf7d0" stroke="#15803d"/>
+      <text x="525" y="140" text-anchor="middle" font-weight="bold">Boundary Clock</text>
+      <text x="525" y="156" text-anchor="middle" font-size="10">switch: slave on uplink,</text>
+      <text x="525" y="166" text-anchor="middle" font-size="10">master on downlinks</text>
+      <!-- slaves -->
+      <rect x="60" y="220" width="120" height="40" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="120" y="244" text-anchor="middle">Slave / OC</text>
+      <rect x="200" y="220" width="120" height="40" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="260" y="244" text-anchor="middle">Slave / OC</text>
+      <rect x="440" y="220" width="120" height="40" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="500" y="244" text-anchor="middle">Slave / OC</text>
+      <rect x="580" y="220" width="120" height="40" rx="6" fill="#eff5ff" stroke="#2563eb"/>
+      <text x="640" y="244" text-anchor="middle">Slave / OC</text>
+      <!-- lines -->
+      <g stroke="#475569" stroke-width="1.4">
+        <line x1="340" y1="74" x2="195" y2="118"/>
+        <line x1="380" y1="74" x2="525" y2="118"/>
+        <line x1="160" y1="168" x2="120" y2="218"/>
+        <line x1="230" y1="168" x2="260" y2="218"/>
+        <line x1="490" y1="168" x2="500" y2="218"/>
+        <line x1="560" y1="168" x2="640" y2="218"/>
+      </g>
+    </svg>
+    <figcaption>One grandmaster at the root. Switches participate as transparent clocks (correct for their own forwarding delay) or boundary clocks (re-distribute time on each segment). Ordinary clocks (OC) at the leaves are the end devices being disciplined. "Slave" is the role; recent specs prefer "time receiver."</figcaption>
+  </figure>
+  <table>
+    <tr><th>Role</th><th>What it is</th></tr>
+    <tr><td><strong>Grandmaster (GM)</strong></td><td>The root time source for the domain — the best clock, often locked to GPS/GNSS or an atomic reference. Everyone synchronizes to it.</td></tr>
+    <tr><td><strong>Master</strong></td><td>The port/clock that <em>provides</em> time on a given segment (the GM is master to the whole domain; a boundary clock is master on its downlinks).</td></tr>
+    <tr><td><strong>Slave / time receiver</strong></td><td>A clock that <em>disciplines itself</em> to a master — adjusts its local clock to match.</td></tr>
+    <tr><td><strong>Ordinary Clock (OC)</strong></td><td>An end device with a single PTP port — either master or slave, not both.</td></tr>
+    <tr><td><strong>Boundary Clock (BC)</strong></td><td>A multi-port device (switch) that is a slave on its upstream port and a master on its downstream ports — it terminates and regenerates PTP, segmenting the network.</td></tr>
+    <tr><td><strong>Transparent Clock (TC)</strong></td><td>A switch that forwards PTP but measures how long each message dwelt inside it (<em>residence time</em>) and adds that to the message's correction field — so the slave can subtract switch delay.</td></tr>
+  </table>
+
+  <h2 class="section" id="ts-bmca">BMCA — electing the grandmaster</h2>
+  <p>No human assigns the grandmaster. PTP runs the <strong>Best Master Clock Algorithm</strong>: clocks advertise their quality in periodic <strong>Announce</strong> messages, and every node independently compares them to decide which is best. The comparison is a defined priority order:</p>
+  <div class="ascii">Announce message advertises, compared in this order:
+   1. priority1            (admin override, lower wins)
+   2. clockClass           (traceability to a reference, e.g. GPS-locked)
+   3. clockAccuracy        (how good the oscillator is)
+   4. offsetScaledLogVariance (stability)
+   5. priority2            (admin tie-breaker)
+   6. clockIdentity        (MAC-derived, final tie-break — lowest wins)</div>
+  <p>The winner becomes grandmaster; its downstream ports become masters and the losers become slaves. Because BMCA is distributed and continuous, if the grandmaster fails or a better clock appears, the network re-elects automatically — the basis of redundancy in safety-critical deployments.</p>
+
+  <h2 class="section" id="ts-exchange">The Sync message exchange</h2>
+  <p>This is the heart of PTP and the most-asked detail. Master and slave exchange timestamped messages to compute two unknowns: the <strong>offset</strong> (how far apart the clocks are) and the <strong>path delay</strong> (how long a message takes on the wire). Four timestamps — <code>t1, t2, t3, t4</code> — make it solvable.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="11.5">
+      <text x="180" y="20" text-anchor="middle" font-weight="bold" fill="#b45309">Master</text>
+      <text x="540" y="20" text-anchor="middle" font-weight="bold" fill="#2563eb">Slave</text>
+      <line x1="180" y1="28" x2="180" y2="300" stroke="#94a3b8"/>
+      <line x1="540" y1="28" x2="540" y2="300" stroke="#94a3b8"/>
+
+      <!-- Sync -->
+      <line x1="180" y1="60" x2="540" y2="110" stroke="#b45309" stroke-width="1.6" marker-end="url(#pa)"/>
+      <text x="360" y="78" text-anchor="middle" font-size="11" fill="#b45309" font-weight="bold">Sync</text>
+      <text x="120" y="58" text-anchor="end" font-size="11" fill="#b91c1c" font-weight="bold">t1</text>
+      <text x="115" y="70" text-anchor="end" font-size="9" fill="#5a6473">(send)</text>
+      <text x="600" y="112" font-size="11" fill="#b91c1c" font-weight="bold">t2</text>
+      <text x="600" y="124" font-size="9" fill="#5a6473">(receive)</text>
+
+      <!-- Follow_Up -->
+      <line x1="180" y1="95" x2="540" y2="140" stroke="#b45309" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#pa)"/>
+      <text x="360" y="112" text-anchor="middle" font-size="10" fill="#b45309">Follow_Up (carries t1) — two-step only</text>
+
+      <!-- Delay_Req -->
+      <line x1="540" y1="175" x2="180" y2="225" stroke="#2563eb" stroke-width="1.6" marker-end="url(#pb)"/>
+      <text x="360" y="194" text-anchor="middle" font-size="11" fill="#2563eb" font-weight="bold">Delay_Req</text>
+      <text x="600" y="174" font-size="11" fill="#b91c1c" font-weight="bold">t3</text>
+      <text x="600" y="186" font-size="9" fill="#5a6473">(send)</text>
+      <text x="120" y="226" text-anchor="end" font-size="11" fill="#b91c1c" font-weight="bold">t4</text>
+      <text x="115" y="238" text-anchor="end" font-size="9" fill="#5a6473">(receive)</text>
+
+      <!-- Delay_Resp -->
+      <line x1="180" y1="255" x2="540" y2="290" stroke="#b45309" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#pa)"/>
+      <text x="360" y="272" text-anchor="middle" font-size="10" fill="#b45309">Delay_Resp (carries t4)</text>
+
+      <defs>
+        <marker id="pa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+        <marker id="pb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+      </defs>
+    </svg>
+    <figcaption>The classic delay-request mechanism. The master sends Sync (t1 sent, t2 received); the slave sends Delay_Req (t3 sent, t4 received). With all four timestamps the slave solves for offset and delay. Follow_Up and Delay_Resp carry the master-side timestamps to the slave.</figcaption>
+  </figure>
+
+  <ol>
+    <li><strong>Sync</strong> (master → slave): master records <code>t1</code> = its send time; slave records <code>t2</code> = its receive time.</li>
+    <li><strong>Follow_Up</strong> (master → slave): in two-step mode, delivers the precise <code>t1</code> to the slave (see one-step vs two-step below).</li>
+    <li><strong>Delay_Req</strong> (slave → master): slave records <code>t3</code> = its send time; master records <code>t4</code> = its receive time.</li>
+    <li><strong>Delay_Resp</strong> (master → slave): delivers <code>t4</code> back to the slave.</li>
+  </ol>
+
+  <h2 class="section" id="ts-math">The offset &amp; delay math</h2>
+  <p>The slave now holds all four timestamps. Assuming the path delay is symmetric (same time each direction), two equations:</p>
+  <pre><code class="language-c">/* The two PTP fundamental equations (delay-request mechanism) */
+
+mean_path_delay = ((t2 - t1) + (t4 - t3)) / 2;
+
+offset          =  (t2 - t1) - mean_path_delay;
+//  equivalently: ((t2 - t1) - (t4 - t3)) / 2
+
+/* The slave then corrects its clock by subtracting `offset`. */
+slave_clock_corrected = slave_clock - offset;</code></pre>
+  <p>Intuition: <code>(t2 − t1)</code> is "trip time downstream + clock offset"; <code>(t4 − t3)</code> is "trip time upstream − clock offset." Adding them cancels the offset and leaves twice the path delay; subtracting them cancels the delay and leaves twice the offset.</p>
+  <div class="callout warn">
+    <strong>The symmetry assumption is the Achilles' heel.</strong> The math assumes the wire takes equally long each way. Asymmetric paths (different up/down routing, store-and-forward switches, queueing) inject error equal to half the asymmetry. This is exactly why PTP-aware switches (transparent/boundary clocks) exist — they remove the variable switch delay from the equation.
+  </div>
+
+  <h2 class="section" id="ts-onestep">One-step vs two-step</h2>
+  <p>The difference is purely <em>how the master communicates <code>t1</code></em> — the moment the Sync message left the wire.</p>
+  <table>
+    <tr><th></th><th>Two-step</th><th>One-step</th></tr>
+    <tr><td>Mechanism</td><td>Sync goes out; a <em>second</em> Follow_Up message carries the captured <code>t1</code></td><td>Hardware writes the precise <code>t1</code> <em>into the Sync message itself</em> as it leaves</td></tr>
+    <tr><td>Why two messages?</td><td>You can't know the exact egress timestamp until the packet is already gone, so software sends it afterward</td><td>The PHY/MAC timestamps and patches the outgoing frame on the fly — no follow-up needed</td></tr>
+    <tr><td>Network load</td><td>More messages</td><td>Fewer messages, lower bandwidth</td></tr>
+    <tr><td>Hardware demand</td><td>Works with simpler timestamping</td><td>Needs hardware that can rewrite the timestamp (and recompute checksum) at egress</td></tr>
+  </table>
+  <div class="ascii">Two-step:   [Sync (no t1)] ───► then ───► [Follow_Up: "t1 was 12:00:00.000123"]
+One-step:   [Sync: t1=12:00:00.000123 written in-flight by hardware]  (done)</div>
+  <p>Both yield identical accuracy; one-step trades silicon capability for fewer packets. Automotive gPTP commonly uses one-step.</p>
+
+  <h2 class="section" id="ts-hwts">Hardware timestamping — why PTP is precise</h2>
+  <p>The reason PTP reaches nanoseconds while NTP sits at milliseconds: the timestamps <code>t1–t4</code> are captured <strong>in the PHY/MAC hardware at the SFD (start-of-frame delimiter)</strong>, the instant the frame crosses the wire — not in software where OS scheduling, interrupt latency, and stack traversal add tens of microseconds of unpredictable jitter.</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif" font-size="11">
+      <text x="360" y="18" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="12.5">Where the timestamp is taken</text>
+      <rect x="40" y="35" width="150" height="34" rx="5" fill="#f3e8ff" stroke="#7c3aed"/><text x="115" y="56" text-anchor="middle">App / PTP stack</text>
+      <rect x="40" y="75" width="150" height="34" rx="5" fill="#eff5ff" stroke="#2563eb"/><text x="115" y="96" text-anchor="middle">OS / driver</text>
+      <rect x="280" y="55" width="150" height="34" rx="5" fill="#ecfdf3" stroke="#15803d"/><text x="355" y="76" text-anchor="middle">MAC</text>
+      <rect x="470" y="55" width="150" height="34" rx="5" fill="#fde68a" stroke="#b45309"/><text x="545" y="72" text-anchor="middle" font-weight="bold">PHY ⏱</text><text x="545" y="84" text-anchor="middle" font-size="9">timestamp here</text>
+      <text x="660" y="76" font-size="20">〜</text>
+      <line x1="190" y1="92" x2="278" y2="74" stroke="#94a3b8" marker-end="url(#hz)"/>
+      <line x1="430" y1="72" x2="468" y2="72" stroke="#94a3b8" marker-end="url(#hz)"/>
+      <text x="360" y="125" text-anchor="middle" font-size="10.5" fill="#b91c1c">NTP stamps up in software (jitter) · PTP stamps at the PHY (deterministic, ns-level)</text>
+      <text x="360" y="142" text-anchor="middle" font-size="10.5" fill="#5a6473">A dedicated hardware clock counter is latched the moment the SFD is on the wire.</text>
+      <defs><marker id="hz" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+    </svg>
+    <figcaption>The closer to the wire the timestamp is captured, the less software-induced jitter it contains. PTP-capable MAC/PHYs latch a hardware counter at the SFD — the foundation of sub-microsecond sync.</figcaption>
+  </figure>
+
+  <h2 class="section" id="ts-gptp">802.1AS — gPTP</h2>
+  <p><strong>IEEE 802.1AS</strong> defines <strong>gPTP</strong> (generalized PTP) — a tightly constrained <em>profile</em> of 1588 created for Audio-Video Bridging and now <strong>Time-Sensitive Networking</strong>. It is the time backbone of automotive and pro-AV Ethernet. The current edition is <strong>802.1AS-2020</strong>.</p>
+  <p>How gPTP differs from generic PTP:</p>
+  <ul>
+    <li><strong>Layer-2 only.</strong> gPTP runs directly over Ethernet (no UDP/IP), keeping it lean and switch-friendly.</li>
+    <li><strong>Every device must be gPTP-aware.</strong> There are no ordinary transparent clocks passing it through blindly — each bridge is a "time-aware bridge" that participates. This guarantees the whole path is accounted for.</li>
+    <li><strong>Peer delay mechanism.</strong> Instead of end-to-end Delay_Req, gPTP measures delay <em>link-by-link</em> between adjacent nodes using <strong>Pdelay_Req / Pdelay_Resp / Pdelay_Resp_Follow_Up</strong>. Each hop knows its neighbor-link delay precisely.</li>
+    <li><strong>2020 additions:</strong> multiple time domains (e.g. a free-running "working clock" alongside global time), redundancy via multiple sync trees, and a common mean-link-delay service.</li>
+    <li><strong>Target accuracy:</strong> within ~1 µs across up to seven hops.</li>
+  </ul>
+  <div class="ascii">Generic PTP delay:  end-to-end  (slave ↔ master Delay_Req/Resp)
+gPTP peer delay:    link-by-link (each node ↔ its direct neighbor via Pdelay)
+                    GM ──Pdelay── BR ──Pdelay── BR ──Pdelay── end station
+                    every hop's delay measured locally and summed</div>
+
+  <h2 class="section" id="ts-profiles">Other profiles &amp; PTP in practice</h2>
+  <p>PTP is deliberately a toolkit; each industry pins down the options into a <strong>profile</strong>:</p>
+  <table>
+    <tr><th>Profile</th><th>Domain</th></tr>
+    <tr><td><strong>802.1AS / gPTP</strong></td><td>Automotive, pro audio/video, TSN</td></tr>
+    <tr><td><strong>Power Profile (C37.238)</strong></td><td>Electrical substations / smart grid</td></tr>
+    <tr><td><strong>Telecom (G.8275.1/.2)</strong></td><td>Mobile network (4G/5G) phase/frequency sync</td></tr>
+    <tr><td><strong>Default profiles (1588 Annex)</strong></td><td>General industrial automation</td></tr>
+  </table>
+  <p>On Linux, the practical stack is <strong>linuxptp</strong>: <code>ptp4l</code> runs the PTP/gPTP protocol and disciplines the NIC's hardware (PHC) clock, while <code>phc2sys</code> slews the system clock to that hardware clock. The kernel exposes the NIC clock as <code>/dev/ptpN</code>; <code>SO_TIMESTAMPING</code> sockets surface the hardware timestamps to userspace.</p>
+  <pre><code class="language-bash"># Run gPTP (802.1AS profile) as a time-aware endpoint on eth0
+ptp4l -i eth0 -f /etc/linuxptp/gPTP.cfg -m
+
+# Discipline the OS clock (CLOCK_REALTIME) to the NIC hardware clock
+phc2sys -s eth0 -O 0 -m
+
+# Check the PTP hardware clock device
+ethtool -T eth0          # shows hardware timestamping capabilities</code></pre>
+  <div class="callout tip">
+    <strong>Tie it together.</strong> gPTP provides the shared clock (802.1AS); the time-aware shaper (802.1Qbv) uses that clock to open transmission gates at exact instants; the result is a converged Ethernet network that carries best-effort traffic <em>and</em> hard-real-time control on the same wire. Time sync is the keystone of deterministic networking.
+  </div>
+</main>
+</div>
+</div>
+
+
+<div class="tab-panel" data-tab="glossary">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>Categories</h2>
+    <input class="toc-filter" type="text" placeholder="Filter categories…">
+  </div>
+  <ul>
+    <li><span class="group-title">Jump to</span>
+      <ul>
+        <li><a href="#gl-emb">Embedded &amp; Systems</a></li>
+        <li><a href="#gl-cc">C / C++</a></li>
+        <li><a href="#gl-net">Networking</a></li>
+        <li><a href="#gl-ts">Time Sync</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>Acronym Glossary</h1>
+    <p class="subtitle">The alphabet soup of embedded networking, decoded. Type in the box to filter every table at once — by acronym, expansion, or meaning.</p>
+  </header>
+  <input class="gloss-search" id="glossSearch" type="text" placeholder="Search acronyms (e.g. DMA, MTU, PTP, RAII)…">
+  <p class="gloss-empty" id="glossEmpty">No acronyms match your search.</p>
+
+  <h2 class="section" id="gl-emb">Embedded &amp; Systems</h2>
+  <table>
+    <tr><th>Acronym</th><th>Expansion</th><th>What it means</th><th>Cat.</th></tr>
+    <tr><td><code>MCU</code></td><td>Microcontroller Unit</td><td>Single-chip computer (CPU + flash + RAM + peripherals); runs bare-metal/RTOS.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>SoC</code></td><td>System on Chip</td><td>Integrates an application CPU, GPU, memory controllers, and peripherals; often runs Linux.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>RTOS</code></td><td>Real-Time Operating System</td><td>Small preemptive kernel giving bounded, analyzable task latency (FreeRTOS, Zephyr).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>ISR</code></td><td>Interrupt Service Routine</td><td>Function the CPU jumps to on an interrupt. Keep short; defer real work.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>IRQ</code></td><td>Interrupt Request</td><td>A hardware signal asking the CPU to run an ISR.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>NVIC</code></td><td>Nested Vectored Interrupt Controller</td><td>Cortex-M unit that prioritizes and nests interrupts.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>DMA</code></td><td>Direct Memory Access</td><td>Engine that moves data between memory/peripherals without the CPU.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>MMIO</code></td><td>Memory-Mapped I/O</td><td>Peripheral registers accessed as ordinary memory addresses.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>MMU</code></td><td>Memory Management Unit</td><td>Hardware doing virtual-to-physical address translation + per-process isolation.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>MPU</code></td><td>Memory Protection Unit</td><td>Region-based access permissions; no address translation (Cortex-M/R).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>SPL</code></td><td>Secondary Program Loader</td><td>Tiny first-stage bootloader that inits DRAM and loads U-Boot.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>DTB / DTS</code></td><td>Device Tree Blob / Source</td><td>Data structure describing board hardware to the Linux kernel at boot.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>JTAG</code></td><td>Joint Test Action Group</td><td>Standard hardware debug/boundary-scan port.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>SWD</code></td><td>Serial Wire Debug</td><td>ARM 2-wire debug interface (a JTAG alternative).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>HAL</code></td><td>Hardware Abstraction Layer</td><td>Vendor library wrapping register access behind portable functions.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>I2C</code></td><td>Inter-Integrated Circuit</td><td>2-wire addressed multi-drop bus for sensors/EEPROM/PMICs.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>SPI</code></td><td>Serial Peripheral Interface</td><td>4-wire full-duplex master/slave bus; fast (flash, displays, radios).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>UART</code></td><td>Universal Async Receiver/Transmitter</td><td>2-wire asynchronous serial link (consoles, GPS, modems).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>CAN</code></td><td>Controller Area Network</td><td>Robust multi-master differential bus for vehicles/industrial control.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>GPIO</code></td><td>General-Purpose Input/Output</td><td>Software-controllable digital pins.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>ADC / DAC</code></td><td>Analog-to-Digital / Digital-to-Analog Converter</td><td>Convert between analog voltages and digital values.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>PWM</code></td><td>Pulse-Width Modulation</td><td>Encoding a value as duty cycle (motors, LEDs, power).</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>WDT</code></td><td>Watchdog Timer</td><td>Resets the chip if firmware stops "kicking" it — hang recovery.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+    <tr><td><code>RMSG / IPC</code></td><td>RPMsg / Inter-Processor Comms</td><td>Messaging between a Linux core and a companion RTOS/MCU core.</td><td><span class="acr-badge cat-emb">Emb</span></td></tr>
+  </table>
+
+  <h2 class="section" id="gl-cc">C / C++</h2>
+  <table>
+    <tr><th>Acronym</th><th>Expansion</th><th>What it means</th><th>Cat.</th></tr>
+    <tr><td><code>UB</code></td><td>Undefined Behavior</td><td>Code the standard gives no meaning to; the optimizer may do anything.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>RAII</code></td><td>Resource Acquisition Is Initialization</td><td>Tie resource lifetime to object scope; destructor releases it.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>POD</code></td><td>Plain Old Data</td><td>A type safe to copy byte-wise (trivially copyable, no custom dtor/vptr).</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>STL</code></td><td>Standard Template Library</td><td>C++ containers, iterators, and algorithms.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>RTTI</code></td><td>Run-Time Type Information</td><td>Runtime type queries (<code>typeid</code>, <code>dynamic_cast</code>); often disabled in embedded.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>ABI</code></td><td>Application Binary Interface</td><td>Binary contract: calling convention, struct layout, name mangling.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>LE / BE</code></td><td>Little-Endian / Big-Endian</td><td>Byte order of multi-byte values in memory.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>CRTP</code></td><td>Curiously Recurring Template Pattern</td><td>Static polymorphism via a class templated on its derived type.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>MISRA</code></td><td>Motor Industry Software Reliability Assoc.</td><td>Coding-standard ruleset for safe C/C++ in critical systems.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>TU</code></td><td>Translation Unit</td><td>One source file plus its includes after preprocessing — the unit of compilation.</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+    <tr><td><code>NX</code></td><td>No-eXecute</td><td>Memory permission marking a region non-executable (W^X hardening).</td><td><span class="acr-badge cat-cc">C/C++</span></td></tr>
+  </table>
+
+  <h2 class="section" id="gl-net">Networking</h2>
+  <table>
+    <tr><th>Acronym</th><th>Expansion</th><th>What it means</th><th>Cat.</th></tr>
+    <tr><td><code>OSI</code></td><td>Open Systems Interconnection</td><td>The 7-layer reference model for network communication.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>TCP</code></td><td>Transmission Control Protocol</td><td>Reliable, ordered, connection-oriented L4 byte stream.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>UDP</code></td><td>User Datagram Protocol</td><td>Connectionless, best-effort L4 datagrams; low latency.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>IP</code></td><td>Internet Protocol</td><td>L3 logical addressing and routing between networks.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>MAC</code></td><td>Media Access Control</td><td>L2 hardware address / the sublayer that frames &amp; addresses on a link.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>PHY</code></td><td>Physical layer transceiver</td><td>Chip that drives bits as signals on copper/fiber/RF.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>ARP</code></td><td>Address Resolution Protocol</td><td>Maps an IP address to a MAC on the local segment.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>MTU</code></td><td>Maximum Transmission Unit</td><td>Largest payload a link carries in one frame (classically 1500 B).</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>FCS</code></td><td>Frame Check Sequence</td><td>CRC trailer that detects frame corruption.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>VLAN</code></td><td>Virtual LAN (802.1Q)</td><td>Tagged virtual networks + priority over one physical link.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>TSN</code></td><td>Time-Sensitive Networking</td><td>802.1 amendments giving standard Ethernet bounded latency/determinism.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>AVB</code></td><td>Audio Video Bridging</td><td>Predecessor to TSN for streaming media with reserved bandwidth.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>QoS</code></td><td>Quality of Service</td><td>Prioritizing/shaping traffic classes.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>NAT</code></td><td>Network Address Translation</td><td>Rewriting addresses/ports at a private/public boundary.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>DHCP</code></td><td>Dynamic Host Configuration Protocol</td><td>Auto-assigns IP addresses to hosts.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>DNS</code></td><td>Domain Name System</td><td>Resolves names to IP addresses (UDP/TCP 53).</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>TLS</code></td><td>Transport Layer Security</td><td>Encryption/authentication above TCP (L6 in OSI terms).</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>MQTT</code></td><td>Message Queuing Telemetry Transport</td><td>Lightweight publish/subscribe protocol for IoT.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>IGMP</code></td><td>Internet Group Management Protocol</td><td>How hosts join multicast groups; switches "snoop" it to prune traffic.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>DDS</code></td><td>Data Distribution Service</td><td>Pub/sub middleware (ROS 2, automotive) often over multicast UDP.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>BLE</code></td><td>Bluetooth Low Energy</td><td>Low-power Bluetooth using the GATT service/characteristic model.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>GATT</code></td><td>Generic Attribute Profile</td><td>BLE data model: services containing readable/writable/notify characteristics.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>SPE</code></td><td>Single-Pair Ethernet</td><td>Ethernet over one twisted pair (the BASE-T1 automotive family).</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>MDIO</code></td><td>Management Data I/O</td><td>2-wire bus the MAC uses to configure/read a PHY.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+    <tr><td><code>RGMII / SGMII</code></td><td>(Reduced/Serial) Gigabit Media Independent Interface</td><td>Standard MAC&#8596;PHY data interfaces.</td><td><span class="acr-badge cat-net">Net</span></td></tr>
+  </table>
+
+  <h2 class="section" id="gl-ts">Time Synchronization</h2>
+  <table>
+    <tr><th>Acronym</th><th>Expansion</th><th>What it means</th><th>Cat.</th></tr>
+    <tr><td><code>PTP</code></td><td>Precision Time Protocol (IEEE 1588)</td><td>Sub-microsecond clock sync using hardware timestamps.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>gPTP</code></td><td>generalized PTP (IEEE 802.1AS)</td><td>Constrained L2 PTP profile for TSN/automotive; every node participates.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>NTP</code></td><td>Network Time Protocol</td><td>Millisecond-class software time sync over WAN.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>GM</code></td><td>Grandmaster</td><td>The root, authoritative clock of a PTP domain.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>BMCA</code></td><td>Best Master Clock Algorithm</td><td>Distributed election of the grandmaster via Announce messages.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>OC</code></td><td>Ordinary Clock</td><td>Single-port PTP end device (master or slave).</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>BC</code></td><td>Boundary Clock</td><td>Multi-port switch: slave upstream, master downstream.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>TC</code></td><td>Transparent Clock</td><td>Switch that adds its residence time to a PTP message's correction field.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>PHC</code></td><td>PTP Hardware Clock</td><td>The NIC's hardware clock disciplined by PTP (Linux <code>/dev/ptpN</code>).</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>SFD</code></td><td>Start-of-Frame Delimiter</td><td>The on-wire instant where PTP latches its hardware timestamp.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>PPS</code></td><td>Pulse Per Second</td><td>1 Hz hardware edge used to align/verify clocks (often from GNSS).</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>GNSS / GPS</code></td><td>Global Navigation Satellite System</td><td>Common absolute reference a grandmaster locks to.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+    <tr><td><code>ppm</code></td><td>Parts Per Million</td><td>Oscillator drift unit; 50 ppm &#8776; 50 &micro;s/s of divergence.</td><td><span class="acr-badge cat-ts">Time</span></td></tr>
+  </table>
+</main>
+</div>
+</div>
+
+<div class="tab-panel" data-tab="qa">
+<div class="layout">
+<aside class="toc">
+  <div class="toc-header">
+    <h2>Topics</h2>
+    <input class="toc-filter" type="text" placeholder="Filter topics…">
+  </div>
+  <ul>
+    <li><span class="group-title">Jump to</span>
+      <ul>
+        <li><a href="#qa-emb">Embedded &amp; Systems</a></li>
+        <li><a href="#qa-cc">C / C++</a></li>
+        <li><a href="#qa-net">Networking</a></li>
+        <li><a href="#qa-ts">Time Sync</a></li>
+      </ul>
+    </li>
+  </ul>
+</aside>
+<main class="content">
+  <header class="tab-header">
+    <h1>Interview Q&amp;A</h1>
+    <p class="subtitle">Common fundamentals questions for an embedded firmware / software engineer, with model answers. Click a question to reveal the answer — try answering aloud first.</p>
+  </header>
+
+  <h2 class="section" id="qa-emb">Embedded &amp; Systems</h2>
+
+  <details class="qa"><summary>What's the difference between a microcontroller and a microprocessor / SoC?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>A microcontroller integrates CPU, flash, RAM, and peripherals on one chip and typically runs bare-metal or an RTOS with no MMU — deterministic, low-power, kB of RAM. A microprocessor/application SoC has a more powerful CPU (often multi-core), an MMU, and external DRAM/storage, and runs a full OS like Linux. The dividing question is "is there an MMU?" — it decides whether you get virtual memory, process isolation, and a real OS.</p></div></details>
+
+  <details class="qa"><summary>When would you choose bare-metal vs an RTOS vs Linux?<span class="qa-tag">design</span></summary>
+  <div class="qa-body"><p>Bare-metal for the smallest, most deterministic, lowest-power jobs and bootloaders — a super-loop plus ISRs, full control of every cycle. An RTOS when you need multiple prioritized tasks with bounded latency and blocking primitives but still hard real-time. Linux when you need a filesystem, networking stack, memory protection, and a rich userspace — accepting that it's only soft real-time unless you add PREEMPT_RT or offload the critical loop to a companion MCU/Cortex-R core.</p></div></details>
+
+  <details class="qa"><summary>Why is <code>volatile</code> needed, and what does it NOT do?<span class="qa-tag">gotcha</span></summary>
+  <div class="qa-body"><p><code>volatile</code> tells the compiler the object can change outside the program's control, so it must not cache the value in a register, elide reads/writes, or reorder accesses to it. You need it for memory-mapped registers, ISR-shared variables, and signal-handler flags. It does <em>not</em> make accesses atomic, does not insert memory barriers across cores/threads, and does not flush store buffers — for concurrency you need atomics and barriers. Short version: <code>volatile</code> is for hardware, atomics are for threads.</p></div></details>
+
+  <details class="qa"><summary>An ISR sets a flag the main loop polls, but the loop never sees it. Why?<span class="qa-tag">debug</span></summary>
+  <div class="qa-body"><p>The flag almost certainly isn't <code>volatile</code>, so the optimizer hoisted the read out of the loop and tests a stale cached copy forever. Mark it <code>volatile</code>. Secondary issues: if the flag is wider than the CPU word it can be read torn, and any multi-byte shared state needs a critical section (briefly disable interrupts) or an atomic to avoid a race with the ISR.</p></div></details>
+
+  <details class="qa"><summary>What are the golden rules for writing an ISR?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Keep it short and defer real work to the main loop or a task. Never block, never busy-wait, never call <code>malloc</code>/<code>printf</code> or anything non-reentrant. Communicate with the foreground only via <code>volatile</code> variables, lock-free queues, or RTOS "FromISR" APIs. Always clear the interrupt source or it re-fires. Be mindful of latency and of nesting/priority if the controller supports it.</p></div></details>
+
+  <details class="qa"><summary>What is DMA and what's the classic bug with it?<span class="qa-tag">gotcha</span></summary>
+  <div class="qa-body"><p>DMA is a dedicated engine that transfers data between memory and peripherals without the CPU touching each byte, freeing the core and interrupting when done — essential for high-throughput links. The classic bug is cache coherency: on a cached SoC the CPU may read a stale cached copy of a buffer DMA just filled, or DMA may transmit stale data the CPU's writes haven't flushed. You must invalidate the cache before reading a DMA-filled buffer and clean/flush it before DMA reads CPU-written data.</p></div></details>
+
+  <details class="qa"><summary>Walk me through how an SoC boots Linux.<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>An immutable on-chip Boot ROM runs first and loads a small first-stage loader (SPL/BL2) that initializes DRAM and clocks, which loads U-Boot, which loads the kernel image plus the device tree (DTB) and jumps to it. The kernel initializes drivers, mounts the root filesystem, and starts <code>init</code> (PID 1), which brings up userspace. Secure boot adds a cryptographic chain of trust where each stage verifies the next's signature. On an MCU it's trivial by comparison: the CPU loads the reset vector and jumps to startup code that copies <code>.data</code> and zeroes <code>.bss</code> before <code>main()</code>.</p></div></details>
+
+  <details class="qa"><summary>Where do <code>.text</code>, <code>.data</code>, and <code>.bss</code> live, and why does startup copy <code>.data</code>?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p><code>.text</code> (code) and <code>.rodata</code> live in flash and execute/read in place. <code>.bss</code> (zero-initialized globals) lives in RAM and is zeroed by startup. <code>.data</code> (non-zero initialized globals) must exist in RAM at runtime but its initial values can only be stored in non-volatile flash — so the C runtime copies those initializers from flash to RAM before <code>main()</code>. Locals and dynamic allocations use the stack and heap in RAM.</p></div></details>
+
+  <details class="qa"><summary>How do I2C, SPI, and UART differ, and when do you pick each?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>UART is a 2-wire asynchronous point-to-point link with no clock — simple, for consoles/GPS/modems. SPI is a 4-wire synchronous full-duplex master/multi-slave bus that's fast (tens of MHz) — for flash, displays, fast ADCs, radios. I2C is a 2-wire addressed multi-drop bus — many devices on few pins, slower, for sensors/EEPROM/PMICs. Pick UART for simple point-to-point, SPI for speed, I2C for many devices on few pins. (CAN when you need noise-immune deterministic multi-node arbitration in a vehicle.)</p></div></details>
+
+  <h2 class="section" id="qa-cc">C / C++</h2>
+
+  <details class="qa"><summary>What is endianness, and how do you detect it at runtime?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Endianness is the order multi-byte values are stored in memory — little-endian puts the least-significant byte at the lowest address, big-endian the most-significant. Detect it by storing <code>uint32_t x = 1;</code> and reading the first byte through a <code>char*</code>: if <code>*(uint8_t*)&amp;x == 1</code> the LSB came first, so little-endian. A union of an int and a byte array does the same. Best of all, use the compile-time macro <code>__BYTE_ORDER__</code> or C++20's <code>std::endian::native</code> so the branch folds away. It only matters when raw bytes cross a boundary — a wire, a file, shared memory.</p></div></details>
+
+  <details class="qa"><summary>What's "network byte order" and how do you write endian-safe serialization?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Network byte order is big-endian — the internet's convention, converted via <code>htons/htonl/ntohs/ntohl</code>. The robust, host-independent way to read/write a value is to assemble it with explicit shifts and masks (<code>b[0]&lt;&lt;24 | b[1]&lt;&lt;16 | …</code>), never by casting or <code>memcpy</code>-ing a struct onto the wire. Field-by-field shift/mask is immune to endianness, alignment, and padding differences between sender and receiver.</p></div></details>
+
+  <details class="qa"><summary>Show the right and wrong ways to use <code>memcpy</code>.<span class="qa-tag">gotcha</span></summary>
+  <div class="qa-body"><p>Right: size from <code>sizeof(destination)</code> or a clamped length, only on trivially-copyable types, non-overlapping regions. Wrong: <code>sizeof</code> on a pointer parameter (gives 4/8, not the array size); a destination too small for <code>n</code> (overflow); overlapping source/dest (UB — use <code>memmove</code>); trusting an unbounded peer-supplied length (the Heartbleed bug); and in C++, <code>memcpy</code> over a non-trivially-copyable type like <code>std::string</code>, which bitwise-copies an internal pointer and causes a double-free. Before any <code>memcpy</code>: is dest big enough, is n bounded, can regions overlap, is the type trivially copyable? (See the full section on the C/C++ tab.)</p></div></details>
+
+  <details class="qa"><summary>Why is <code>sizeof(struct)</code> often bigger than the sum of its members?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Alignment padding. The compiler inserts invisible bytes so each member sits at an address that's a multiple of its size (a 4-byte int on a 4-aligned address) and pads the struct's total size to a multiple of its largest member's alignment. Reorder members largest-to-smallest to minimize waste. You can remove padding with a packed attribute, but that creates misaligned members that are slow and may fault on strict-alignment cores — prefer explicit serialization for on-wire data.</p></div></details>
+
+  <details class="qa"><summary>Stack vs heap — and why is dynamic allocation often banned in firmware?<span class="qa-tag">design</span></summary>
+  <div class="qa-body"><p>The stack holds locals and call frames, is fast and auto-freed, but is small and fixed — overflow silently corrupts RAM on an MCU. The heap is large and flexible but allocation is non-deterministic and fragments over time. Safety-critical standards (MISRA, DO-178C) often forbid <code>malloc</code> after init because allocation failure and fragmentation are unpredictable. The discipline: allocate everything at startup so the memory map is fully known at link time and the device can't run out of memory in the field.</p></div></details>
+
+  <details class="qa"><summary>What's undefined behavior, and name a few that bite firmware.<span class="qa-tag">gotcha</span></summary>
+  <div class="qa-body"><p>UB is code the standard assigns no meaning to; the compiler may assume it never happens and optimize accordingly — silently deleting your checks. Common ones: signed integer overflow (use unsigned for wrap-around), strict-aliasing violations from type-punning casts (use <code>memcpy</code> or unions instead), shifting by &ge; the type width, reading uninitialized memory, and out-of-bounds/use-after-free (which on an MCU just corrupts silently — no MMU to fault). Defenses: <code>-Wall -Wextra</code>, static analysis, and sanitizers on host builds.</p></div></details>
+
+  <details class="qa"><summary>Which C++ features are worth using in embedded, and which are usually disabled?<span class="qa-tag">design</span></summary>
+  <div class="qa-body"><p>Worth it: <code>constexpr</code> (compute at compile time into flash, zero runtime cost), templates for type-safe zero-overhead abstractions, RAII for deterministic resource cleanup, <code>enum class</code>, <code>std::array</code>/<code>std::span</code> for bounds without a heap. Usually disabled with <code>-fno-exceptions -fno-rtti</code>: exceptions need unwinding tables and a runtime, RTTI bloats binaries, and both hurt determinism. The good parts of embedded C++ are the compile-time ones.</p></div></details>
+
+  <h2 class="section" id="qa-net">Networking</h2>
+
+  <details class="qa"><summary>Name the 7 OSI layers and what each does.<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>From top: 7 Application (the protocol apps speak — HTTP/MQTT), 6 Presentation (encoding/encryption/compression — TLS), 5 Session (managing dialogs), 4 Transport (end-to-end delivery to a port — TCP/UDP), 3 Network (logical addressing &amp; routing — IP), 2 Data Link (framing &amp; MAC addressing on one link — Ethernet), 1 Physical (bits as signals — PHY/cabling). Mnemonic: "All People Seem To Need Data Processing." Firmware lives mostly in L1–L4.</p></div></details>
+
+  <details class="qa"><summary>TCP vs UDP — differences and when to use each?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>TCP is connection-oriented (3-way handshake), reliable, ordered, with flow/congestion control and a byte-stream abstraction — but higher latency and head-of-line blocking. UDP is connectionless, best-effort, unordered, message-oriented, with tiny overhead and low latency. Use TCP when every byte must arrive in order (firmware OTA, config, logs); use UDP when timeliness beats completeness (video/audio, sensor streams, discovery, DNS, PTP). For time-critical traffic, retransmitting stale data is useless — hence UDP/raw L2.</p></div></details>
+
+  <details class="qa"><summary>Explain unicast vs multicast vs broadcast.<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Unicast is one-to-one (a specific host's address). Multicast is one-to-many to a subscribed group (IPv4 224.0.0.0/4); a switch with IGMP snooping replicates only to ports that joined — efficient for one sensor feeding many consumers, and the basis of AVB/gPTP. Broadcast is one-to-all on a segment (255.255.255.255), used by ARP and DHCP, IPv4 only. IPv6 drops broadcast in favor of multicast and adds anycast (nearest of a group).</p></div></details>
+
+  <details class="qa"><summary>What's the difference between a switch and a router? PHY and MAC?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>A switch operates at L2, forwarding frames by MAC address within one network and learning which MAC is on which port. A router operates at L3, forwarding packets by IP between different networks and decrementing TTL. The MAC is the L2 sublayer (often in the SoC) that frames and addresses traffic; the PHY is the transceiver chip that turns bits into electrical/optical/RF signals. They connect over MII/RMII/RGMII/SGMII, and you configure the PHY from the MAC over MDIO — which is exactly where Ethernet firmware lives.</p></div></details>
+
+  <details class="qa"><summary>What is automotive Ethernet and why "BASE-T1"?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Automotive Ethernet keeps standard Ethernet framing but runs over a single unshielded twisted pair to save weight and cost — the "T1" means one pair (vs four in office Ethernet). Variants: 10BASE-T1S (802.3cg, supports a multidrop bus to replace CAN/LIN), 100BASE-T1 (802.3bw), 1000BASE-T1 (802.3bp), and MultiGBASE-T1 (802.3ch, 2.5/5/10G). Cars adopt it for the bandwidth and uniform IP stack that cameras, lidar, and zonal architectures need.</p></div></details>
+
+  <details class="qa"><summary>What is TSN and which standards make it up?<span class="qa-tag">design</span></summary>
+  <div class="qa-body"><p>Time-Sensitive Networking is a set of IEEE 802.1 amendments adding determinism — bounded latency and zero congestion loss — to standard Ethernet, so one backbone carries best-effort and hard-real-time traffic. Pillars: 802.1AS (gPTP) for network-wide time, 802.1Qbv (time-aware shaper) for gated transmission windows, 802.1Qbu/802.3br (frame preemption), 802.1CB (replication/elimination for reliability), and 802.1Qav (credit-based shaper). It plus automotive Ethernet and gPTP replaces FlexRay/CAN with one converged synchronized fabric.</p></div></details>
+
+  <h2 class="section" id="qa-ts">Time Synchronization</h2>
+
+  <details class="qa"><summary>Why do distributed systems need precise time sync?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Independent nodes must agree on "when" to fuse sensor data correctly (a lidar point and a camera frame must be from the same instant), to actuate in lockstep, to order events for forensics, and to drive deterministic TSN scheduling. Every node's crystal drifts (tens of ppm with temperature/age) — at 50 ppm two free-running clocks diverge 50 µs every second — so you continuously correct against a common reference.</p></div></details>
+
+  <details class="qa"><summary>How does PTP achieve sub-microsecond accuracy where NTP gets milliseconds?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Hardware timestamping. PTP latches the timestamp in the MAC/PHY at the start-of-frame delimiter — the instant the frame is on the wire — removing the OS scheduling, interrupt, and stack-traversal jitter that NTP's software timestamps suffer. That single difference takes you from milliseconds to nanoseconds. PTP also enlists the network (boundary/transparent clocks) to account for switch delay.</p></div></details>
+
+  <details class="qa"><summary>Walk through the PTP message exchange and the offset/delay math.<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>Master sends Sync (records t1 sent, slave records t2 received); slave sends Delay_Req (records t3 sent, master records t4 received); Delay_Resp returns t4. With all four: <code>mean_path_delay = ((t2−t1)+(t4−t3))/2</code> and <code>offset = (t2−t1) − mean_path_delay</code>. Adding the two transit times cancels the offset (leaving 2× delay); subtracting them cancels the delay (leaving 2× offset). The slave then subtracts the offset from its clock. The key assumption is path symmetry — asymmetry injects error equal to half the difference.</p></div></details>
+
+  <details class="qa"><summary>What's the difference between one-step and two-step PTP?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>It's only about how the master communicates t1, the Sync egress time. Two-step sends a separate Follow_Up message carrying t1, because software can't know the exact egress time until the packet has already left. One-step has hardware write the precise t1 into the Sync frame itself as it leaves (recomputing the checksum on the fly) — fewer messages, but it needs more capable silicon. Both give identical accuracy; automotive gPTP commonly uses one-step.</p></div></details>
+
+  <details class="qa"><summary>Grandmaster, boundary clock, transparent clock — what's the difference?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>The grandmaster is the root authoritative clock of the domain, often GPS-disciplined, elected by the BMCA. A boundary clock is a multi-port switch that's a slave on its uplink and a master on its downlinks — it terminates and regenerates PTP, segmenting the network. A transparent clock forwards PTP but measures how long each message dwelt inside it (residence time) and adds that to the correction field, so the slave can subtract switch delay. Both switch types exist to defeat the path-asymmetry error.</p></div></details>
+
+  <details class="qa"><summary>How does gPTP (802.1AS) differ from generic PTP?<span class="qa-tag">design</span></summary>
+  <div class="qa-body"><p>gPTP is a tightly constrained PTP profile for TSN/automotive/pro-AV. It runs at L2 directly over Ethernet (no UDP/IP); every device must be a time-aware bridge that participates (no blind pass-through); and it measures delay link-by-link with the peer-delay mechanism (Pdelay_Req/Resp) rather than end-to-end. 802.1AS-2020 adds multiple time domains, redundancy via multiple sync trees, and a common mean-link-delay service. Target accuracy is about 1 µs over seven hops.</p></div></details>
+
+  <details class="qa"><summary>What does the BMCA do?<span class="qa-tag">core</span></summary>
+  <div class="qa-body"><p>The Best Master Clock Algorithm elects the grandmaster automatically — no manual assignment. Clocks advertise quality in Announce messages and every node independently compares them by priority1, then clockClass (traceability, e.g. GPS-locked), clockAccuracy, variance, priority2, and finally clockIdentity as a tie-break. The best becomes grandmaster; others become slaves. Because it's continuous and distributed, the network re-elects automatically if the grandmaster fails — the basis of time redundancy.</p></div></details>
+
+</main>
+</div>
+</div>
+
+<button class="back-top" id="backTop" title="Back to top">&uarr;</button>
+
+<script>
+(function () {
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+  var tabPanels  = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+
+  function activate(tabId) {
+    tabButtons.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === tabId); });
+    tabPanels.forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-tab') === tabId); });
+    window.scrollTo(0, 0);
+  }
+  tabButtons.forEach(function (b) {
+    b.addEventListener('click', function () { activate(b.getAttribute('data-tab')); });
+  });
+
+  // TOC smooth-scroll + per-panel filter
+  document.querySelectorAll('.toc-filter').forEach(function (filter) {
+    var panel = filter.closest('.tab-panel');
+    filter.addEventListener('input', function () {
+      var q = filter.value.toLowerCase().trim();
+      panel.querySelectorAll('.toc a').forEach(function (a) {
+        var match = a.textContent.toLowerCase().indexOf(q) !== -1;
+        a.classList.toggle('hidden', q.length > 0 && !match);
+      });
+      panel.querySelectorAll('.toc .group-title').forEach(function (g) {
+        var ul = g.nextElementSibling;
+        if (!ul) return;
+        var anyVisible = Array.prototype.slice.call(ul.querySelectorAll('a')).some(function (a) { return !a.classList.contains('hidden'); });
+        g.parentElement.classList.toggle('hidden', q.length > 0 && !anyVisible);
+      });
+    });
+  });
+
+  // Copy buttons
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn'; btn.textContent = 'Copy';
+    btn.addEventListener('click', function () {
+      var code = pre.querySelector('code');
+      navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function () {
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
+      });
+    });
+    pre.appendChild(btn);
+  });
+
+  // Scrollspy within active panel
+  function setupSpy() {
+    var links = {};
+    document.querySelectorAll('.toc a').forEach(function (a) {
+      var id = a.getAttribute('href');
+      if (id && id.charAt(0) === '#') links[id.slice(1)] = a;
+    });
+    window.addEventListener('scroll', function () {
+      var active = document.querySelector('.tab-panel.active');
+      if (!active) return;
+      var heads = active.querySelectorAll('h2.section[id]');
+      var cur = null;
+      heads.forEach(function (h) { if (h.getBoundingClientRect().top < 120) cur = h.id; });
+      Object.keys(links).forEach(function (k) { links[k].classList.toggle('active', k === cur); });
+    }, { passive: true });
+  }
+  setupSpy();
+
+  // Back to top
+  var backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', function () { backTop.classList.toggle('show', window.scrollY > 400); }, { passive: true });
+  backTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // Glossary live search — filter every table row at once
+  var glossSearch = document.getElementById('glossSearch');
+  if (glossSearch) {
+    var glossPanel = glossSearch.closest('.tab-panel');
+    var glossEmpty = document.getElementById('glossEmpty');
+    var glossTables = Array.prototype.slice.call(glossPanel.querySelectorAll('table'));
+    glossSearch.addEventListener('input', function () {
+      var q = glossSearch.value.toLowerCase().trim();
+      var anyVisible = false;
+      glossTables.forEach(function (tbl) {
+        var rows = Array.prototype.slice.call(tbl.querySelectorAll('tr'));
+        var sectionHasMatch = false;
+        rows.forEach(function (tr) {
+          if (tr.querySelector('th')) return; // keep header row
+          var match = q.length === 0 || tr.textContent.toLowerCase().indexOf(q) !== -1;
+          tr.classList.toggle('gloss-hidden', !match);
+          if (match) { sectionHasMatch = true; anyVisible = true; }
+        });
+        // hide the whole table + its preceding <h2> when nothing matches
+        var heading = tbl.previousElementSibling;
+        var hide = q.length > 0 && !sectionHasMatch;
+        tbl.classList.toggle('gloss-hidden', hide);
+        if (heading && heading.tagName === 'H2') heading.classList.toggle('gloss-hidden', hide);
+      });
+      glossEmpty.style.display = (q.length > 0 && !anyVisible) ? 'block' : 'none';
+    });
+  }
+
+  if (window.hljs) { hljs.highlightAll(); }
+})();
+</script>
+</body>
+</html>
