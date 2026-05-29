@@ -32,7 +32,6 @@
   --label-color: #1e3a8a;
   --tab-inactive: #5a6473;
   --tab-active: #1e3a8a;
-  --nav-header: #0b1f44;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 70px; }
@@ -88,7 +87,7 @@ a:hover { text-decoration: underline; }
 .toc-filter:focus { border-color: var(--accent); }
 .toc ul { list-style: none; margin: 0; padding: 0; }
 .toc > ul > li { margin-bottom: 0.6rem; }
-.toc .group-title { display: block; padding: 0.4rem 0.5rem 0.3rem; margin-top: 0.15rem; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--nav-header); border-bottom: 1px solid var(--border); }
+.toc .group-title { display: block; padding: 0.35rem 0.5rem; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-soft); }
 .toc a { display: block; padding: 0.28rem 0.55rem; color: var(--text); border-radius: 5px; border-left: 3px solid transparent; transition: background .1s, border-color .1s, color .1s; }
 .toc a:hover { background: var(--panel-2); text-decoration: none; }
 .toc a.active { background: var(--accent-soft); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -99,7 +98,6 @@ a:hover { text-decoration: underline; }
 .tab-header { margin-bottom: 1.6rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border); }
 .tab-header h1 { margin: 0; font-size: 27px; }
 .tab-header .subtitle { margin: 0.35rem 0 0; color: var(--text-soft); font-size: 15px; }
-.book-meta { margin: -0.2rem 0 0.9rem; color: var(--muted); font-size: 13.5px; border-left: 3px solid var(--accent); padding-left: 0.7rem; }
 h2.section { font-size: 22px; margin-top: 2.6rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border); color: var(--accent); scroll-margin-top: 70px; }
 h3 { font-size: 17.5px; margin-top: 1.8rem; color: var(--accent-2); }
 h4 { font-size: 15px; margin-top: 1.2rem; margin-bottom: 0.4rem; }
@@ -176,11 +174,10 @@ details.qa .qa-body p:first-child { margin-top: 0.7rem; }
   <nav>
     <button class="tab-btn active" data-tab="embedded"><span class="tab-num">1</span>Embedded &amp; Systems</button>
     <button class="tab-btn" data-tab="ccpp"><span class="tab-num">2</span>C / C++</button>
-    <button class="tab-btn" data-tab="patterns"><span class="tab-num">3</span>Design Patterns &amp; OOP</button>
-    <button class="tab-btn" data-tab="network"><span class="tab-num">4</span>Networking &amp; OSI</button>
-    <button class="tab-btn" data-tab="timesync"><span class="tab-num">5</span>Time Sync / PTP</button>
-    <button class="tab-btn" data-tab="glossary"><span class="tab-num">6</span>Glossary</button>
-    <button class="tab-btn" data-tab="qa"><span class="tab-num">7</span>Interview Q&amp;A</button>
+    <button class="tab-btn" data-tab="network"><span class="tab-num">3</span>Networking &amp; OSI</button>
+    <button class="tab-btn" data-tab="timesync"><span class="tab-num">4</span>Time Sync / PTP</button>
+    <button class="tab-btn" data-tab="glossary"><span class="tab-num">5</span>Glossary</button>
+    <button class="tab-btn" data-tab="qa"><span class="tab-num">6</span>Interview Q&amp;A</button>
   </nav>
 </div>
 
@@ -219,12 +216,6 @@ details.qa .qa-body p:first-child { margin-top: 0.7rem; }
         <li><a href="#emb-buses">On-board buses: I2C/SPI/UART/CAN</a></li>
         <li><a href="#emb-toolchain">Toolchain, linker, memory sections</a></li>
         <li><a href="#emb-debug">Debug: JTAG/SWD, power, watchdog</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">Study Guide</span>
-      <ul>
-        <li><a href="#emb-book-mes">Making Embedded Systems (White)</a></li>
-        <li><a href="#emb-book-pes">Programming Embedded Systems (Barr)</a></li>
       </ul>
     </li>
   </ul>
@@ -530,115 +521,6 @@ arm-none-eabi-size fw.elf                        # how much flash/RAM used</code
     <li><strong>Low-power modes.</strong> Sleep/stop/standby trade wake latency for current. Battery designs spend most time asleep, waking on interrupt — which is why ISR-driven (not polling) architecture is the default.</li>
     <li><strong>Brown-out detection.</strong> Resets the MCU when supply voltage sags, preventing undefined behavior from an underpowered core.</li>
   </ul>
-
-  <h2 class="section" id="emb-book-mes">Study guide: <em>Making Embedded Systems</em> &mdash; Elecia White</h2>
-  <p class="book-meta">O'Reilly (2011) &middot; subtitle <em>"Design Patterns for Great Software."</em> The best first book on how firmware is actually built &mdash; a working engineer's mental model, not a language tutorial. Ten chapters that walk a product from architecture, through bring-up and drivers, to squeezing out the last byte and milliwatt. (Overview below is a study companion in our own words, with the book's themes &mdash; not a substitute for the book.)</p>
-
-  <div class="callout tip"><strong>The big idea.</strong> An embedded engineer's real job is mapping software onto hardware you don't fully control, under tight memory/power/time budgets, while keeping the system <em>flexible</em> across its whole life &mdash; conception, prototyping, bring-up, debugging, release, maintenance. White's thesis: borrow proven software-design principles (modularity, encapsulation, loose coupling, design patterns) and apply them to firmware. Good firmware comes from good architecture and interfaces, not clever tricks.</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1</td><td>Introduction</td><td>The challenges (constraints, debugging, hardware you can't trust) and the guiding <em>principles</em> to confront them: modularity, encapsulation, loose coupling, test early, document <em>what</em> not <em>how</em>.</td></tr>
-    <tr><td>2</td><td>Creating a System Architecture</td><td>Draw the system: block diagram, hierarchy of control, layered view. Encapsulate modules behind interfaces; the driver model (open/close/read/write/ioctl); the Adapter pattern.</td></tr>
-    <tr><td>3</td><td>Getting the Code Working</td><td>Board bring-up, <strong>reading a datasheet and a schematic</strong>, the debugging toolbox (multimeter, scope, logic analyzer), building tests, the Command pattern, and graceful error handling.</td></tr>
-    <tr><td>4</td><td>Outputs, Inputs &amp; Timers</td><td>From "blink an LED" via registers to separating hardware from action (Facade pattern), button input, interrupts &amp; debouncing, dependency injection, timers and PWM.</td></tr>
-    <tr><td>5</td><td>Task Management</td><td>Scheduling/RTOS basics, inter-task communication, <strong>race conditions &amp; priority inversion</strong>, and a deep tour of <strong>state machines</strong> (state-centric, event-centric, State pattern, table-driven) plus interrupt handling.</td></tr>
-    <tr><td>6</td><td>Communicating with Peripherals</td><td>Sensors, actuators, displays, host links; the OSI model in practice; Ethernet/WiFi, serial buses (SPI/I2C/UART profiles), parallel; adding robustness to comms.</td></tr>
-    <tr><td>7</td><td>Updating Code</td><td>Bootloaders: on-board vs. roll-your-own, linker scripts, copy-to-RAM, the dangerous erase-and-program window, reset-to-new-code, and update security.</td></tr>
-    <tr><td>8</td><td>Doing More with Less</td><td>Fitting in tight memory: <strong>reading a map file</strong>, shrinking code (libraries, functions vs. macros, constants), RAM tactics (avoid <code>malloc</code>, globals trade-offs, overlays), and profiling/optimizing for speed.</td></tr>
-    <tr><td>9</td><td>Math</td><td>Fast vs. slow operations, picking/modifying algorithms, Taylor series, dividing by constants, lookup tables, and <strong>fixed-point ("fake floating point")</strong> with error analysis &mdash; how to do math without an FPU.</td></tr>
-    <tr><td>10</td><td>Reducing Power Consumption</td><td>Turn off what you're not using (peripherals, I/O, subsystems), slow the clock, sleep modes, an <strong>interrupt-driven main loop</strong>, the watchdog, avoiding frequent wake-ups, chained processors.</td></tr>
-  </table>
-
-  <h3>The principles the book keeps returning to</h3>
-  <ul>
-    <li><strong>Design for change, not just for now.</strong> Flexibility across the product's whole lifespan is the real goal; loosely-coupled modules let you rework one part without breaking another.</li>
-    <li><strong>Split along things that change independently.</strong> A good rule of thumb for where to draw module boundaries &mdash; and physical objects (a sensor, a comm channel) are natural seams.</li>
-    <li><strong>Encapsulate behind interfaces.</strong> The driver interface (open/close/read/write/ioctl) and patterns like Adapter, Facade, Command, and State recur throughout &mdash; they keep hardware specifics out of application logic.</li>
-    <li><strong>Read the hardware first.</strong> The datasheet and schematic are primary sources; know the registers, memory map, and electrical limits before writing a line of driver code.</li>
-    <li><strong>Test early, document <em>what</em> not <em>how</em>.</strong> Bugs caught before release are "gifts"; comments should orient a future reader, not narrate <code>i++</code>.</li>
-    <li><strong>Resist premature optimization.</strong> Make it work, test it, then make it smaller/faster where it matters &mdash; measure first ("premature optimization is the root of all evil," quoting Knuth).</li>
-    <li><strong>Interrupt-driven, not polling.</strong> The low-power chapters reframe the main loop around sleeping until an interrupt &mdash; the default architecture for battery devices.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> draw the block diagram before coding; split modules where things change independently; hide hardware behind driver interfaces; read the datasheet/schematic first; short ISRs &mdash; defer work to the main loop; prefer static allocation, read the map file when RAM runs out; use fixed-point when there's no FPU; measure before optimizing; and sleep the processor whenever you can.</div>
-
-  <h2 class="section" id="emb-book-pes">Study guide: <em>Programming Embedded Systems</em> (2nd ed.) &mdash; Michael Barr &amp; Anthony Massa</h2>
-  <p class="book-meta">O'Reilly, 2006 &middot; 14 chapters + 5 appendices, ~301 pp. The classic "bring up bare metal from scratch in C" book. Where White's <em>Making Embedded Systems</em> is about <em>architecture and practice</em>, Barr is about the <em>mechanics of getting your code to run on the chip at all</em>. (Overview below is a study companion in our own words, following the book's structure &mdash; not a substitute for the book.) The portions about C-language hardware access live in the <strong>C / C++</strong> tab; this section covers the systems mechanics.</p>
-
-  <div class="callout tip"><strong>What's distinctive (and worth keeping).</strong> Two contributions are the reason this book endures: the precise <strong>compile &rarr; link &rarr; <em>locate</em></strong> model of how source becomes a flashable image, and a rigorous, code-backed approach to <strong>memory testing</strong>. The 2nd edition modernized everything onto the GNU toolchain (<code>gcc</code>/<code>ld</code>), the Arcom board, and adds chapters on the <strong>eCos</strong> RTOS and <strong>embedded Linux</strong> &mdash; so the workflow it teaches still matches today's. (Its 2006-era hand-rolled integer typedefs are the one dated part &mdash; see the C / C++ tab for the modern <code>&lt;stdint.h&gt;</code> replacement.)</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1&ndash;3</td><td>Introduction &middot; Getting to Know the Hardware &middot; Your First Embedded Program</td><td>What an embedded/real-time system is; reading a schematic; and the canonical blinking-LED first program.</td></tr>
-    <tr><td>4</td><td>Compiling, Linking &amp; Locating</td><td><strong>The signature chapter.</strong> The three-stage build, startup code, and the linker script that places sections at physical addresses.</td></tr>
-    <tr><td>5</td><td>Downloading &amp; Debugging</td><td>Getting the image onto the target (JTAG, bootloaders/RedBoot) and remote debugging with gdb.</td></tr>
-    <tr><td>6</td><td>Memory</td><td>RAM/ROM/hybrid types, DMA, endianness, and the rigorous <strong>memory-test</strong> suite (data-bus, address-bus, device tests).</td></tr>
-    <tr><td>7&ndash;9</td><td>Peripherals &middot; Interrupts &middot; Putting It All Together</td><td>The device-driver model, interrupt handling, and a worked driver that ties the pieces into a working application.</td></tr>
-    <tr><td>10&ndash;12</td><td>Operating Systems &middot; eCos Examples &middot; Embedded Linux Examples</td><td>RTOS concepts (tasks, scheduling, IPC) shown the same task built on bare metal, on eCos, and on embedded Linux.</td></tr>
-    <tr><td>13&ndash;14</td><td>Extending Functionality &middot; Optimization Techniques</td><td>Adding I/O (e.g. networking), then shrinking code size, increasing speed, and cutting power.</td></tr>
-  </table>
-
-  <h3>The signature idea: compile &rarr; link &rarr; <em>locate</em></h3>
-  <p>On a hosted OS an executable's addresses are assigned at load time. On bare metal there is no loader &mdash; <em>you</em> assign them, and that third step is what trips up newcomers:</p>
-  <pre class="ascii">  .c/.cpp ──gcc──▶ .o (relocatable)
-  .o + libs ──ld──▶ relocatable program  (sections: .text .data .bss, addresses TBD)
-        │
-   linker script ──▶ LOCATE ──▶ binary image  (every section pinned to a physical address)
-   (MEMORY{rom,ram}, SECTIONS{...})              .text→ROM, .data/.bss→RAM</pre>
-  <p>With the GNU tools the locator is built into <code>ld</code> and driven by a <strong>linker script</strong>. The book's Blinking-LED script captures the essentials &mdash; declare the memory regions, then map each section into one:</p>
-  <pre><code class="language-text">ENTRY (main)
-MEMORY
-{
-    ram : ORIGIN = 0x00400000, LENGTH = 64M
-    rom : ORIGIN = 0x60000000, LENGTH = 16M
-}
-SECTIONS
-{
-    data : { _DataStart = . ; *(.data) _DataEnd = . ; } &gt;ram   /* initialized */
-    bss  : { _BssStart  = . ; *(.bss)  _BssEnd  = . ; } &gt;ram   /* zero-init  */
-    text : { *(.text) } &gt;rom                                   /* code in ROM */
-}</code></pre>
-
-  <h3>Startup code (the "crt0" runtime)</h3>
-  <p>Between reset and <code>main()</code> a small assembly/C stub has to make C's assumptions true. The symbols the linker script exports (<code>_DataStart</code>, <code>_BssStart</code>&hellip;) are exactly what it uses:</p>
-  <ul>
-    <li><strong>Copy <code>.data</code> from ROM to RAM</strong> &mdash; initialized globals are stored in flash but must live in writable RAM at run time.</li>
-    <li><strong>Zero <code>.bss</code></strong> &mdash; the C standard says uninitialized statics start at 0, so the runtime clears that region.</li>
-    <li><strong>Set the stack pointer</strong>, then <strong>call <code>main()</code></strong>.</li>
-  </ul>
-  <div class="callout"><strong>Why it matters:</strong> "my global is garbage / my initialized variable is zero" bugs are almost always a broken or missing startup routine, or a linker script that put <code>.data</code> in the wrong place. This is the model that makes the map file and the boot chain (covered earlier in this tab) make sense.</div>
-
-  <h3>Memory testing &mdash; the book's other claim to fame</h3>
-  <p>Before trusting a board you prove the memory is wired correctly. Barr separates three independent faults and gives a test for each:</p>
-  <table>
-    <tr><th>Test</th><th>Fault it catches</th><th>Method</th></tr>
-    <tr><td><strong>Data bus</strong></td><td>Shorted/stuck data lines</td><td><em>Walking 1's</em>: write a single 1 bit walked across the word, read back each.</td></tr>
-    <tr><td><strong>Address bus</strong></td><td>Shorted/stuck address lines (aliasing)</td><td>Walking 1's over <em>address</em> lines (powers of two), check for aliased cells.</td></tr>
-    <tr><td><strong>Device</strong></td><td>Dead/missing chip, bad cells</td><td>Increment/decrement pattern over the whole device.</td></tr>
-  </table>
-  <pre><code class="language-c">/* Walking 1's data-bus test (book's memtestDataBus, abridged). */
-unsigned datatest(volatile unsigned *pAddress)
-{
-    unsigned pattern;
-    for (pattern = 1; pattern != 0; pattern &lt;&lt;= 1) {   /* 1,2,4,...,0x80000000 */
-        *pAddress = pattern;                          /* write one walking bit */
-        if (*pAddress != pattern)                     /* read back immediately */
-            return pattern;                           /* nonzero = failing bit  */
-    }
-    return 0;                                         /* 0 = pass               */
-}</code></pre>
-
-  <h3>Optimization &amp; power (Ch. 14)</h3>
-  <ul>
-    <li><strong>Speed vs size are often opposed.</strong> The book separates "increasing code efficiency" from "decreasing code size" &mdash; and warns that aggressive optimizing compilers can reorder or delete code that touches hardware (the case for <code>volatile</code>, covered in the C / C++ tab).</li>
-    <li><strong>Power is a first-class budget.</strong> The three biggest levers: put the processor in a <strong>sleep/idle mode</strong> whenever idle, <strong>scale the clock frequency</strong> down to the slowest that meets timing, and minimize slow <strong>external-memory accesses</strong>.</li>
-    <li><strong>Limit the cost of C++.</strong> Features like exceptions, RTTI, and heavy templates can bloat code; the book shows how to use C++ on small targets without paying for what you don't use.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> remember the third build step &mdash; you must <em>locate</em>, not just compile and link; the linker script pins sections, the startup code copies <code>.data</code> and zeroes <code>.bss</code> before <code>main</code>; test the memory bus before trusting the board (walking 1's); optimize for size, speed, <em>or</em> power deliberately &mdash; they trade off; and sleep the CPU and slow the clock to save energy.</div>
 </main>
 </div>
 </div>
@@ -680,15 +562,6 @@ unsigned datatest(volatile unsigned *pAddress)
         <li><a href="#cc-cvscpp">When to use which</a></li>
         <li><a href="#cc-cpp-embedded">C++ features for embedded</a></li>
         <li><a href="#cc-ub">Undefined behavior traps</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">Study Guide</span>
-      <ul>
-        <li><a href="#cc-book-kr">The C Programming Language (K&amp;R)</a></li>
-        <li><a href="#cc-book-ds">Data Structures &amp; Algorithm Analysis (Weiss)</a></li>
-        <li><a href="#cc-book-acpp">Accelerated C++ (Koenig &amp; Moo)</a></li>
-        <li><a href="#cc-book-pes">Programming Embedded Systems (Barr)</a></li>
-        <li><a href="#cc-book-cia">C++ Concurrency in Action (Williams)</a></li>
       </ul>
     </li>
   </ul>
@@ -1068,517 +941,6 @@ struct AdcPower {
     <li><strong>Shifting by ≥ width</strong> (<code>x &lt;&lt; 32</code> for a 32-bit type) is UB. Mask the shift amount.</li>
     <li><strong>Reading a register's reserved bits</strong> and writing them back — always mask to defined fields; reserved bits may have read-as-zero-write-as-zero rules.</li>
   </ul>
-
-  <h2 class="section" id="cc-book-kr">Study guide: <em>The C Programming Language</em> (2nd ed.) &mdash; Kernighan &amp; Ritchie</h2>
-  <p class="book-meta">Prentice Hall &middot; "K&amp;R." Written by the language's co-creators (Ritchie designed C). The 2nd edition describes <strong>ANSI/ISO C</strong> &mdash; function prototypes, <code>void</code>, <code>const</code>, and a defined standard library. Famously terse: 8 chapters + 3 appendices in ~270 pages, the source of the first "hello, world." (Overview below is a study companion in our own words, with the book's canonical examples &mdash; not a substitute for the book.)</p>
-
-  <div class="callout tip"><strong>The big idea.</strong> C is a <em>small</em> language paired with a standard library; its power is expressing low-level ideas concisely and portably. The book's method &mdash; stated in its introduction &mdash; is blunt: <em>"The only way to learn a new programming language is by writing programs in it."</em> Every concept arrives as a tiny, complete program.</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1</td><td>A Tutorial Introduction</td><td>The whole language in miniature: <code>hello, world</code>, variables, <code>for</code>, character I/O, arrays, functions, scope.</td></tr>
-    <tr><td>2</td><td>Types, Operators &amp; Expressions</td><td>Data types &amp; sizes, conversions/promotion, bitwise operators, precedence, increment/decrement.</td></tr>
-    <tr><td>3</td><td>Control Flow</td><td><code>if/else</code>, <code>switch</code>, the loop family, <code>break/continue</code>, and the (rarely-used) <code>goto</code>.</td></tr>
-    <tr><td>4</td><td>Functions &amp; Program Structure</td><td>Prototypes, external vs. static linkage, scope rules, header files, recursion, and the preprocessor (<code>#include</code>, <code>#define</code>, conditional compilation).</td></tr>
-    <tr><td>5</td><td>Pointers &amp; Arrays</td><td>The core chapter: addresses, pointer/array duality, address arithmetic, pointer arrays, command-line args, pointers to functions, and reading complicated declarations.</td></tr>
-    <tr><td>6</td><td>Structures</td><td><code>struct</code>, arrays of/pointers to structs, self-referential structures, <code>typedef</code>, <code>union</code>, and <strong>bit-fields</strong>.</td></tr>
-    <tr><td>7</td><td>Input &amp; Output</td><td>The standard library: <code>printf/scanf</code>, <code>varargs</code>, file access, <code>stderr</code>/<code>exit</code>, string &amp; character utilities.</td></tr>
-    <tr><td>8</td><td>The UNIX System Interface</td><td>Below the library: file descriptors, raw <code>read/write</code>, <code>open/creat/close</code>, <code>lseek</code>, and a worked <code>malloc</code> (storage allocator).</td></tr>
-    <tr><td>A&ndash;C</td><td>Appendices</td><td><strong>A</strong> reference manual, <strong>B</strong> standard-library summary, <strong>C</strong> summary of ANSI changes &mdash; all reference material.</td></tr>
-  </table>
-
-  <h3>Signature examples worth memorizing</h3>
-  <p>The iconic first program &mdash; the template for "does my toolchain work?":</p>
-  <pre><code class="language-c">#include &lt;stdio.h&gt;
-
-int main(void)
-{
-    printf("hello, world\n");
-    return 0;
-}</code></pre>
-
-  <p>The character-copy loop (Ch. 1.5) &mdash; the idiom that teaches why <code>getchar()</code> returns an <code>int</code>, not a <code>char</code> (so <code>EOF</code> is representable):</p>
-  <pre><code class="language-c">int c;
-while ((c = getchar()) != EOF)   /* int, so EOF (-1) is distinguishable */
-    putchar(c);</code></pre>
-
-  <p>The famously terse pointer <code>strcpy</code> (Ch. 5.5) &mdash; copies until it hits (and copies) the <code>'\0'</code>, whose value is 0, ending the loop:</p>
-  <pre><code class="language-c">/* strcpy: copy t to s; pointer version */
-void strcpy(char *s, char *t)
-{
-    while (*s++ = *t++)   /* assignment is intentional */
-        ;
-}</code></pre>
-  <div class="callout warn"><strong>Modern caveat.</strong> <code>while (*s++ = *t++)</code> is deliberate assignment-in-condition; compilers now warn on it. Write it as <code>while ((*s++ = *t++) != '\0')</code> to silence the warning and signal intent. And never shadow the real library <code>strcpy</code> &mdash; this is a teaching example.</div>
-
-  <p>Command-line arguments (Ch. 5.10) &mdash; <code>argv</code> is an array of pointers; this echoes the args:</p>
-  <pre><code class="language-c">int main(int argc, char *argv[])
-{
-    while (--argc &gt; 0)
-        printf("%s%s", *++argv, (argc &gt; 1) ? " " : "");
-    printf("\n");
-    return 0;
-}</code></pre>
-
-  <h3>Why it still matters for firmware</h3>
-  <ul>
-    <li><strong>Ch. 2.9 bitwise operators &amp; Ch. 6.9 bit-fields</strong> are exactly the register-manipulation toolkit on an MCU &mdash; setting/clearing/masking hardware bits.</li>
-    <li><strong>Ch. 5 pointers</strong> are how you touch memory-mapped registers and DMA buffers; the array/pointer duality and address arithmetic are everyday firmware skills.</li>
-    <li><strong>Ch. 4 program structure &amp; the preprocessor</strong> map directly to multi-file builds, headers, and conditional compilation for board variants.</li>
-    <li><strong>Ch. 8's storage allocator</strong> demystifies <code>malloc</code> &mdash; useful precisely because firmware often avoids the heap and rolls its own pools.</li>
-    <li><strong>Ch. 5.12 "complicated declarations"</strong> teaches the read-it-inside-out rule for things like <code>void (*signal(int, void (*)(int)))(int)</code> &mdash; survival gear for function-pointer tables and ISR vectors.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> the language is small &mdash; learn the library; <code>getchar</code> returns <code>int</code> so it can return <code>EOF</code>; pointers and arrays are two views of the same thing; expressions have a value <em>and</em> a type; read declarations inside-out; keep functions small and composable; and the only way to learn C is to write C.</div>
-
-  <h2 class="section" id="cc-book-ds">Study guide: <em>Data Structures &amp; Algorithm Analysis in C++</em> (4th ed.) &mdash; Mark Allen Weiss</h2>
-  <p class="book-meta">Pearson &middot; the classic upper-level data-structures text. Where K&amp;R teaches the language, Weiss teaches what to <em>build</em> with it &mdash; the canonical structures and algorithms, each paired with a <strong>Big-O running-time analysis</strong> and clean C++ implementations using templates and the STL. (Overview below is a study companion in our own words, with the book's structure &mdash; not a substitute for the book.)</p>
-
-  <div class="callout tip"><strong>The big idea.</strong> Choosing the right data structure is an engineering decision driven by <em>asymptotic analysis</em>: you pick the structure whose operations are cheap for your access pattern. The book's spine is "here is the structure, here is its C++ implementation, here is the proof of its running time." Modern C++ (templates, the Big-Five, move semantics, STL containers) is taught as the vehicle.</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1</td><td>Programming: A General Overview</td><td>Math review (exponents, logs, series), recursion, and a modern-C++ primer: classes, <strong>pointers, lvalues/rvalues &amp; references, parameter/return passing, <code>std::move</code>/<code>swap</code>, the Big-Five</strong>, templates, and function objects.</td></tr>
-    <tr><td>2</td><td>Algorithm Analysis</td><td>Big-O / &Omega; / &Theta; notation, how to analyze running time, and the worked maximum-subsequence-sum problem from O(n&sup3;) down to O(n).</td></tr>
-    <tr><td>3</td><td>Lists, Stacks &amp; Queues</td><td>Abstract Data Types; the List ADT; how <code>vector</code> and <code>list</code> are actually implemented; the Stack and Queue ADTs.</td></tr>
-    <tr><td>4</td><td>Trees</td><td>Binary trees, binary search trees, <strong>AVL trees</strong>, splay trees, traversals, B-trees, and <code>set</code>/<code>map</code> in the STL.</td></tr>
-    <tr><td>5</td><td>Hashing</td><td>Hash functions, separate chaining vs. open addressing, rehashing, universal &amp; extendible hashing, worst-case O(1) (cuckoo) schemes.</td></tr>
-    <tr><td>6</td><td>Priority Queues (Heaps)</td><td>The binary heap, its applications, and the variants: d-heaps, leftist, skew, and binomial queues; <code>priority_queue</code> in the STL.</td></tr>
-    <tr><td>7</td><td>Sorting</td><td>Insertion, Shell, heap, merge, and quicksort with analysis; the <strong>&Omega;(n log n) lower bound</strong> for comparison sorts; linear-time bucket/radix sort; external sorting.</td></tr>
-    <tr><td>8</td><td>The Disjoint Sets Class</td><td>Union/find with union-by-rank and path compression, and its near-constant amortized cost.</td></tr>
-    <tr><td>9</td><td>Graph Algorithms</td><td>Topological sort, shortest paths (Dijkstra), network flow, minimum spanning trees, DFS applications, and an intro to NP-completeness.</td></tr>
-    <tr><td>10</td><td>Algorithm Design Techniques</td><td>The big toolbox: <strong>greedy, divide-and-conquer, dynamic programming, randomized, and backtracking</strong> algorithms.</td></tr>
-    <tr><td>11</td><td>Amortized Analysis</td><td>The potential method; why occasional expensive operations still average out cheap (e.g. growing a <code>vector</code>).</td></tr>
-    <tr><td>12</td><td>Advanced Data Structures</td><td>Red-black trees, treaps, suffix arrays/trees, k-d trees, and pairing heaps.</td></tr>
-  </table>
-
-  <h3>The complexity cheat-sheet it drills into you</h3>
-  <table>
-    <tr><th>Structure / op</th><th>Average</th><th>Worst</th></tr>
-    <tr><td>Array / <code>vector</code> index</td><td>O(1)</td><td>O(1)</td></tr>
-    <tr><td>Hash table insert/find</td><td>O(1)</td><td>O(n)</td></tr>
-    <tr><td>Balanced BST (AVL / red-black)</td><td>O(log n)</td><td>O(log n)</td></tr>
-    <tr><td>Binary heap insert / delete-min</td><td>O(log n)</td><td>O(log n)</td></tr>
-    <tr><td>Quicksort</td><td>O(n log n)</td><td>O(n&sup2;)</td></tr>
-    <tr><td>Merge / heap sort</td><td>O(n log n)</td><td>O(n log n)</td></tr>
-    <tr><td>Union-find (w/ path compression)</td><td colspan="2">&asymp; O(&alpha;(n)), effectively constant</td></tr>
-  </table>
-
-  <h3>Why it matters for firmware</h3>
-  <ul>
-    <li><strong>The Big-Five &amp; move semantics</strong> (Ch. 1) are the resource-ownership rules that make RAII safe in C++ &mdash; directly relevant to the embedded-C++ discipline covered earlier in this tab.</li>
-    <li><strong>Static, bounded structures.</strong> Firmware favors ring buffers, fixed pools, and intrusive lists over heap-backed STL containers; knowing the trade-offs lets you pick (or hand-roll) the right one under memory limits.</li>
-    <li><strong>Heaps &amp; priority queues</strong> underpin RTOS schedulers and timer/event queues; <strong>state-machine tables and hash lookups</strong> show up in protocol parsers.</li>
-    <li><strong>Asymptotics guide real-time budgets.</strong> Choosing O(log n) over O(n) is how you keep an ISR or control loop deterministic.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> analyze before you optimize &mdash; know the Big-O of every operation you rely on; hash for average O(1) lookups, balanced trees for ordered O(log n); comparison sorts can't beat &Omega;(n log n); quicksort is fast on average but O(n&sup2;) worst-case (use intro/heap sort when bounds matter); and in C++ get the Big-Five right or let the compiler default them &mdash; never half-define ownership.</div>
-
-  <h2 class="section" id="cc-book-acpp">Study guide: <em>Accelerated C++</em> &mdash; Andrew Koenig &amp; Barbara E. Moo</h2>
-  <p class="book-meta">Addison-Wesley, 2000 &middot; ~336 pp. The book that taught a generation to write <em>modern</em> C++ instead of "C with classes." (Overview below is a study companion in our own words, following the book's structure &mdash; not a substitute for the book.)</p>
-
-  <div class="callout tip"><strong>What makes it different.</strong> Where K&amp;R builds bottom-up from bytes and pointers, and Weiss focuses on hand-implementing structures, Accelerated C++ is famously <strong>top-down and library-first</strong>: you use <code>std::string</code>, <code>std::vector</code>, and the standard algorithms on <em>page one</em>, and only later learn how to build such abstractions yourself. The thread running through the whole book is <strong>value semantics</strong> &mdash; objects that copy, assign, and compare like built-in numbers &mdash; and <strong>generic programming</strong>, the container&ndash;iterator&ndash;algorithm decomposition at the heart of the STL. Read it for the <em>abstractions and idioms</em>, not the low-level mechanics the other two books already cover.</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>0&ndash;2</td><td>Getting started &middot; Strings &middot; Looping &amp; counting</td><td>Straight to <code>std::string</code> and stream I/O; no <code>char*</code> first. Loops, counting, and framing problems in terms of library types from the outset.</td></tr>
-    <tr><td>3&ndash;4</td><td>Batches of data &middot; Organizing programs &amp; data</td><td><code>std::vector</code> for collections; splitting work into functions; grouping data with <code>struct</code>; separating interface from implementation across files.</td></tr>
-    <tr><td>5&ndash;7</td><td>Sequential containers &middot; Library algorithms &middot; Associative containers</td><td>The STL proper: <code>vector</code>/<code>list</code>, <strong>iterators</strong>, the algorithm header (<code>copy</code>, <code>find</code>, <code>sort</code>, <code>transform</code>), and <code>map</code>/<code>set</code> for keyed data.</td></tr>
-    <tr><td>8</td><td>Writing generic functions</td><td><strong>Templates</strong> and iterator categories &mdash; how one algorithm works across any conforming container. The conceptual core of the book.</td></tr>
-    <tr><td>9&ndash;12</td><td>Defining new types &rarr; class objects that act like values</td><td>Designing your own types: constructors, member functions, operator overloading, and the <strong>Rule of Three</strong> (copy ctor, copy assignment, destructor) so your class behaves like a built-in value.</td></tr>
-    <tr><td>13&ndash;14</td><td>Inheritance &amp; dynamic binding &middot; Managing memory (almost) automatically</td><td>Polymorphism with <code>virtual</code> functions; handle/RAII classes and reference-counted handles that free memory for you &mdash; the seed of today's smart pointers.</td></tr>
-    <tr><td>15&ndash;16 &amp; App. A&ndash;B</td><td>Character pictures revisited &middot; Where to go &middot; Language &amp; library reference</td><td>A capstone that ties the OO and generic styles together, plus condensed reference appendices.</td></tr>
-  </table>
-
-  <h3>The big abstraction: container &ndash; iterator &ndash; algorithm</h3>
-  <p>The STL's central insight is that algorithms shouldn't know what container they run on. <strong>Iterators</strong> are the glue &mdash; a generalized pointer that decouples the two, so <code>N</code> algorithms and <code>M</code> containers cost <code>N + M</code> pieces of code instead of <code>N &times; M</code>:</p>
-  <pre class="ascii">  CONTAINERS            ITERATORS              ALGORITHMS
-  +-------------+      (the glue layer)      +---------------+
-  | vector      |\        begin()  end()     | sort()        |
-  | list        | \   .---[ * ++ == ]---.    | find()        |
-  | map / set   |--&gt;--|  uniform access  |--&gt;-| copy()        |
-  | string      | /   '------------------'    | transform()   |
-  | deque       |/                            | accumulate()  |
-  +-------------+                             +---------------+
-        M containers   +   one iterator API   +   N algorithms
-                       =  N + M, not N x M, pieces of code</pre>
-
-  <h3>Signature idiom worth memorizing</h3>
-  <p>The library-first style in one breath &mdash; read words, sort them, and print the unique ones, with no raw loops, no manual memory, and no pointers:</p>
-  <pre><code class="language-cpp">#include &lt;algorithm&gt;
-#include &lt;iostream&gt;
-#include &lt;string&gt;
-#include &lt;vector&gt;
-
-int main()
-{
-    std::vector&lt;std::string&gt; words;
-    std::string w;
-    while (std::cin &gt;&gt; w)          // read until EOF
-        words.push_back(w);
-
-    std::sort(words.begin(), words.end());                 // algorithm + iterators
-    auto last = std::unique(words.begin(), words.end());    // collapse adjacent dups
-    words.erase(last, words.end());                         // erase-remove idiom
-
-    for (const std::string&amp; s : words)
-        std::cout &lt;&lt; s &lt;&lt; '\n';
-    return 0;
-}</code></pre>
-  <div class="callout"><strong>Value-semantics class skeleton (Rule of Three).</strong> If a type manages a resource, define <em>all three</em> &mdash; copy constructor, copy-assignment operator, and destructor &mdash; or, post-C++11, default them and let move semantics apply. This is the same ownership discipline Weiss calls the <em>Big-Five</em>; Accelerated C++ teaches the original three because it predates C++11.</div>
-
-  <h3>Terms to know</h3>
-  <p><strong>Value semantics</strong> (copies are independent) &middot; <strong>generic programming</strong> (write once, run on any conforming type) &middot; <strong>iterator</strong> and its categories (input/output/forward/bidirectional/random-access) &middot; <strong>the erase&ndash;remove idiom</strong> &middot; <strong>RAII / handle classes</strong> &middot; <strong>function objects (functors)</strong> &middot; <strong>interface vs. implementation separation</strong>.</p>
-
-  <h3>Why it matters for firmware</h3>
-  <ul>
-    <li><strong>Value semantics + RAII</strong> are the foundation of safe resource handling in embedded C++ &mdash; deterministic construction/destruction maps cleanly onto acquiring and releasing peripherals, locks, and DMA buffers.</li>
-    <li><strong>Algorithms over hand-written loops</strong> reduce off-by-one and bounds bugs &mdash; valuable even when you swap <code>std::vector</code> for a fixed-capacity container, because the algorithm interface is the same.</li>
-    <li><strong>Templates / generic programming</strong> let you write one driver or ring-buffer that works across element types and widths with zero runtime cost &mdash; the abstraction compiles away.</li>
-    <li><strong>The handle/reference-counted classes of Ch. 14</strong> are the direct ancestor of <code>unique_ptr</code>/<code>shared_ptr</code>; understanding them explains when a shared pointer's overhead is (and isn't) acceptable on an MCU.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> prefer the library to hand-rolled code; reach for an algorithm before writing a loop; make your types behave like values (Rule of Three / Big-Five, all-or-nothing); use iterators to keep algorithms container-agnostic; let RAII own every resource; and template what varies so the abstraction costs nothing at runtime.</div>
-
-  <h2 class="section" id="cc-book-pes">Study guide: <em>Programming Embedded Systems</em> (Barr &amp; Massa) &mdash; the C-for-hardware parts</h2>
-  <p class="book-meta">O'Reilly, 2006. The book's systems mechanics (the compile&ndash;link&ndash;<em>locate</em> build, startup code, and memory testing) live in the <strong>Embedded &amp; Systems</strong> tab. Collected here are its distinctive <em>C-language</em> techniques for talking to hardware &mdash; plus the one piece of the book that has aged and what to use instead.</p>
-
-  <div class="callout warn"><strong>Modern update &mdash; read this first.</strong> The book (2006) defines its own integer types, e.g. <code>typedef unsigned char uint8;</code> and <code>typedef unsigned long uint32;</code>. Don't copy that today. Use the C99 standard headers, which guarantee exact widths across every compiler and target:
-  <pre><code class="language-c">#include &lt;stdint.h&gt;    /* uint8_t, int16_t, uint32_t, uintptr_t, ... */
-#include &lt;stdbool.h&gt;   /* bool, true, false                          */
-#include &lt;stddef.h&gt;    /* size_t, NULL, offsetof                      */</code></pre>
-  Everywhere the book writes <code>uint8</code>/<code>uint16</code>/<code>uint32</code>, mentally substitute <code>uint8_t</code>/<code>uint16_t</code>/<code>uint32_t</code>. The concepts below are unchanged; only the type names modernize.</div>
-
-  <h3>Accessing a memory-mapped register in C</h3>
-  <p>A peripheral register is just a fixed physical address. You read/write it through a <code>volatile</code> pointer so the compiler never caches or elides the access (the same <code>volatile</code> discipline covered earlier in this tab):</p>
-  <pre><code class="language-c">#include &lt;stdint.h&gt;
-
-/* A 32-bit GPIO data register at a fixed address. */
-#define GPIO_DATA   (*(volatile uint32_t *)0x60000010u)
-
-GPIO_DATA = 0x01;            /* write */
-uint32_t v = GPIO_DATA;      /* read  */</code></pre>
-
-  <h3>The struct-overlay idiom for a register block</h3>
-  <p>When a peripheral has many adjacent registers, overlay a <code>struct</code> on its base address &mdash; cleaner and less error-prone than a pile of <code>#define</code>d addresses:</p>
-  <pre><code class="language-c">typedef struct {
-    volatile uint32_t CTRL;     /* offset 0x00 */
-    volatile uint32_t STATUS;   /* offset 0x04 */
-    volatile uint32_t DATA;     /* offset 0x08 */
-} uart_regs_t;
-
-#define UART0  ((uart_regs_t *)0x40001000u)
-
-UART0-&gt;CTRL  |= 0x1;                 /* enable */
-while (!(UART0-&gt;STATUS &amp; 0x20)) { }   /* wait for TX-ready bit */
-UART0-&gt;DATA   = 'A';                 /* transmit */</code></pre>
-  <div class="callout"><strong>Why it works:</strong> C lays struct members out in declaration order at increasing offsets, so the members line up with the hardware register map &mdash; provided you mark each <code>volatile</code> and the layout has no unexpected padding (registers are word-aligned, so it usually doesn't).</div>
-
-  <h3>Bit manipulation &mdash; set, clear, toggle, test</h3>
-  <p>The book's everyday register surgery, as reusable macros:</p>
-  <pre><code class="language-c">#define BIT(n)            (1u &lt;&lt; (n))
-#define SET_BITS(r, m)    ((r) |=  (m))    /* set the masked bits   */
-#define CLR_BITS(r, m)    ((r) &amp;= ~(m))    /* clear the masked bits */
-#define TGL_BITS(r, m)    ((r) ^=  (m))    /* toggle the masked bits*/
-#define TST_BIT(r, n)     (((r) &gt;&gt; (n)) &amp; 1u)
-
-SET_BITS(UART0-&gt;CTRL, BIT(0) | BIT(3));   /* turn on bits 0 and 3 */
-if (TST_BIT(UART0-&gt;STATUS, 5)) { /* TX ready */ }</code></pre>
-
-  <h3>Const + volatile: read-only hardware</h3>
-  <p>A status register you must re-read but must never write is both <code>const</code> (you won't write it) and <code>volatile</code> (the hardware will change it). The combination documents intent and lets the compiler catch accidental writes:</p>
-  <pre><code class="language-c">#define UART_STATUS  (*(const volatile uint32_t *)0x40001004u)
-/* UART_STATUS = 0;   <-- compile error: assignment of read-only location */</code></pre>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> use <code>&lt;stdint.h&gt;</code> fixed-width types, not hand-rolled typedefs; every memory-mapped register access goes through a <code>volatile</code> pointer; overlay a <code>volatile struct</code> on a register block instead of scattering address macros; keep a tiny set of bit set/clear/toggle/test macros; and mark read-only registers <code>const volatile</code> so the compiler guards them.</div>
-
-  <h2 class="section" id="cc-book-cia">Study guide: <em>C++ Concurrency in Action</em> (2nd ed.) &mdash; Anthony Williams</h2>
-  <p class="book-meta">Manning, 2019 &middot; 11 chapters + appendices, ~568 pp. The definitive guide to the C++11/14/17 threading and memory model, written by a member of the committee that designed it. The one book here that goes deep on <strong>what "thread-safe" actually means at the hardware level</strong> &mdash; the natural sequel to the <code>volatile</code> and concurrency material above.</p>
-
-  <div class="callout tip"><strong>What's distinctive.</strong> Where K&amp;R and Accelerated C++ teach single-threaded C/C++, this book is entirely about <em>multiple threads sharing memory</em>: the standard threading library (<code>std::thread</code>, mutexes, condition variables, futures), and &mdash; its crown jewel &mdash; the <strong>C++ memory model and atomics</strong>, which define exactly when one thread is guaranteed to see another's writes. Critically for embedded: it makes clear that <strong><code>volatile</code> is <em>not</em> a concurrency tool</strong> &mdash; <code>std::atomic</code> is.</div>
-
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1</td><td>Hello, world of concurrency</td><td>Why concurrency, processes vs threads, and a first <code>std::thread</code>.</td></tr>
-    <tr><td>2&ndash;3</td><td>Managing threads &middot; Sharing data</td><td>Launching/joining threads and passing arguments; protecting shared data with <code>std::mutex</code>, <code>lock_guard</code>/<code>unique_lock</code>, and avoiding deadlock and race conditions.</td></tr>
-    <tr><td>4</td><td>Synchronizing concurrent operations</td><td>Condition variables, and the <strong>futures/promises</strong> model: <code>std::future</code>, <code>std::promise</code>, <code>std::packaged_task</code>, <code>std::async</code>.</td></tr>
-    <tr><td>5</td><td>The C++ memory model &amp; atomic types</td><td><strong>The core chapter.</strong> <code>std::atomic&lt;T&gt;</code>, the happens-before / synchronizes-with relationships, and the six <code>memory_order</code> options.</td></tr>
-    <tr><td>6&ndash;7</td><td>Lock-based &middot; Lock-free data structures</td><td>Designing thread-safe stacks/queues/maps with locks, then <em>without</em> locks using atomics &mdash; and the memory-reclamation problems that come with them.</td></tr>
-    <tr><td>8&ndash;9</td><td>Designing concurrent code &middot; Advanced thread management</td><td>Partitioning work, performance pitfalls (false sharing, contention), thread pools, and work queues.</td></tr>
-    <tr><td>10&ndash;11</td><td>Parallel algorithms &middot; Testing &amp; debugging</td><td>C++17 parallel STL (execution policies), and techniques for finding races and deadlocks.</td></tr>
-  </table>
-
-  <h3>The toolbox: from high-level to low-level</h3>
-  <table>
-    <tr><th>Tool</th><th>What it gives you</th><th>Reach for it when…</th></tr>
-    <tr><td><code>std::thread</code> / <code>jthread</code></td><td>A managed OS thread.</td><td>You need true parallel execution.</td></tr>
-    <tr><td><code>std::mutex</code> + <code>lock_guard</code></td><td>Mutual exclusion via RAII (auto-unlock).</td><td>Protecting a shared data structure.</td></tr>
-    <tr><td><code>std::condition_variable</code></td><td>Wait/notify between threads.</td><td>A consumer must block until data is ready.</td></tr>
-    <tr><td><code>std::async</code> / <code>future</code></td><td>Run a task, get its result later.</td><td>You want a value back without managing a thread by hand.</td></tr>
-    <tr><td><code>std::atomic&lt;T&gt;</code></td><td>Indivisible reads/writes + ordering control.</td><td>Lock-free flags/counters, or building lock-free structures.</td></tr>
-  </table>
-
-  <h3>The crown jewel: the memory model</h3>
-  <p>On a multi-core CPU, compilers and hardware reorder memory operations. The memory model defines a <em>happens-before</em> relationship so you know when thread B is guaranteed to see thread A's writes. Atomics let you choose how much ordering to pay for:</p>
-  <pre class="ascii">  WEAKER / FASTER  ───────────────────────────────▶  STRONGER / SAFER
-  relaxed        consume*       acquire / release        seq_cst
-  (no ordering,  (data-dep.     (pair up: release        (single global
-   just atomic)   ordering)      "publishes", acquire     order; the
-                                 "sees" the publish)      default)
-        * memory_order_consume is discouraged in practice</pre>
-  <pre><code class="language-cpp">#include &lt;atomic&gt;
-#include &lt;thread&gt;
-
-std::atomic&lt;bool&gt; ready{false};
-int payload = 0;                       // plain data, published via the flag
-
-void producer() {
-    payload = 42;
-    ready.store(true, std::memory_order_release);   // publish: prior writes visible
-}
-void consumer() {
-    while (!ready.load(std::memory_order_acquire))  // acquire: see them once true
-        ;                                           // (spin)
-    // payload == 42 is now guaranteed
-}</code></pre>
-  <div class="callout warn"><strong>The embedded takeaway: <code>volatile</code> &ne; atomic.</strong> <code>volatile</code> stops the <em>compiler</em> from caching/eliding an access (right for memory-mapped registers), but it provides <strong>no</strong> atomicity and <strong>no</strong> inter-thread/-core ordering guarantees. For a flag shared between an ISR and the main loop on a single core, <code>volatile</code> may suffice for a single aligned word; for anything multi-core or read-modify-write, use <code>std::atomic</code> (or C's <code>&lt;stdatomic.h&gt;</code>). The book is emphatic on this point.</div>
-
-  <h3>Why it matters for firmware</h3>
-  <ul>
-    <li><strong>ISR&harr;main-loop and multi-core RTOS communication</strong> are exactly the shared-memory problems the book formalizes; the acquire/release pattern above is the correct way to publish a buffer from one context and consume it in another.</li>
-    <li><strong>Lock-free single-producer/single-consumer ring buffers</strong> (the workhorse of driver/DMA queues) are a direct application of Ch. 5&ndash;7 &mdash; one atomic head, one atomic tail, with release/acquire ordering.</li>
-    <li><strong>RAII locking</strong> (<code>lock_guard</code>) prevents the "forgot to unlock on the error path" deadlocks that plague hand-rolled mutex code.</li>
-    <li><strong>Knowing the cost ladder</strong> (relaxed &rarr; seq_cst) lets you buy only the ordering you need &mdash; <code>seq_cst</code> can mean memory barriers that hurt real-time latency.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> protect shared data with a mutex via RAII (<code>lock_guard</code>), never lock/unlock by hand; prefer <code>std::async</code>/futures to raw threads when you just want a result; <code>volatile</code> is for hardware, <code>std::atomic</code> is for threads &mdash; don't confuse them; use release/acquire to publish-and-consume data across threads; default to <code>seq_cst</code> and only weaken ordering once you've measured and proven it correct; and lock-free is a last resort, not a starting point.</div>
-</main>
-</div>
-</div>
-
-<div class="tab-panel" data-tab="patterns">
-<div class="layout">
-<aside class="toc">
-  <div class="toc-header">
-    <h2>On this tab</h2>
-    <input class="toc-filter" type="text" placeholder="Filter sections…">
-  </div>
-  <ul>
-    <li><span class="group-title">OOP Foundations</span>
-      <ul>
-        <li><a href="#dp-oop">The four pillars</a></li>
-        <li><a href="#dp-solid">SOLID principles</a></li>
-        <li><a href="#dp-principles">Two GoF design principles</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">The Pattern Catalog</span>
-      <ul>
-        <li><a href="#dp-creational">Creational patterns</a></li>
-        <li><a href="#dp-structural">Structural patterns</a></li>
-        <li><a href="#dp-behavioral">Behavioral patterns</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">Worked Examples</span>
-      <ul>
-        <li><a href="#dp-strategy">Strategy</a></li>
-        <li><a href="#dp-observer">Observer</a></li>
-        <li><a href="#dp-state">State machine</a></li>
-        <li><a href="#dp-factory">Factory Method</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">Study Guide</span>
-      <ul>
-        <li><a href="#dp-book-gof">Design Patterns (GoF)</a></li>
-        <li><a href="#dp-embedded">Patterns in firmware</a></li>
-      </ul>
-    </li>
-  </ul>
-</aside>
-<main class="content">
-  <header class="tab-header">
-    <h1>Design Patterns &amp; OOP</h1>
-    <p class="subtitle">Object-oriented design vocabulary &mdash; the four pillars, the SOLID principles, and the 23 <em>Gang of Four</em> patterns: named, reusable solutions to recurring design problems, each with a clear intent, structure, and set of trade-offs.</p>
-  </header>
-
-  <h2 class="section" id="dp-oop">The four pillars of OOP</h2>
-  <table>
-    <tr><th>Pillar</th><th>What it means</th><th>When / why</th></tr>
-    <tr><td><strong>Encapsulation</strong></td><td>Bundle data with the operations on it; hide internals behind a public interface.</td><td>Protect invariants; allow the implementation to change without breaking callers.</td></tr>
-    <tr><td><strong>Abstraction</strong></td><td>Expose <em>what</em> an object does, not <em>how</em>. Model the problem in terms of roles/contracts.</td><td>Manage complexity; let callers depend on a concept, not a concrete class.</td></tr>
-    <tr><td><strong>Inheritance</strong></td><td>Derive a new type from an existing one, reusing and specializing behavior (an "is-a" relationship).</td><td>Use sparingly &mdash; for genuine subtyping, not code reuse. Prefer composition (see below).</td></tr>
-    <tr><td><strong>Polymorphism</strong></td><td>One interface, many implementations; the right method is chosen at runtime (dynamic dispatch / <code>virtual</code>).</td><td>Write code against the base type and let derived types vary the behavior &mdash; the engine behind most patterns.</td></tr>
-  </table>
-
-  <h2 class="section" id="dp-solid">SOLID principles</h2>
-  <p>Five maintainability principles that the patterns operationalize:</p>
-  <table>
-    <tr><th></th><th>Principle</th><th>One-line rule</th></tr>
-    <tr><td><strong>S</strong></td><td>Single Responsibility</td><td>A class should have one reason to change.</td></tr>
-    <tr><td><strong>O</strong></td><td>Open/Closed</td><td>Open for extension, closed for modification &mdash; add behavior via new code, not edits.</td></tr>
-    <tr><td><strong>L</strong></td><td>Liskov Substitution</td><td>Subtypes must be usable anywhere their base type is expected, without surprises.</td></tr>
-    <tr><td><strong>I</strong></td><td>Interface Segregation</td><td>Many small, focused interfaces beat one fat one.</td></tr>
-    <tr><td><strong>D</strong></td><td>Dependency Inversion</td><td>Depend on abstractions, not concretions; high-level code shouldn't depend on low-level details.</td></tr>
-  </table>
-
-  <h2 class="section" id="dp-principles">The two GoF design principles</h2>
-  <p>The whole book hangs on two pieces of advice repeated throughout:</p>
-  <div class="callout tip"><strong>1. Program to an interface, not an implementation.</strong> Depend on the abstract type so any conforming concrete type can be substituted. <strong>2. Favor object composition over class inheritance.</strong> "Has-a" (delegating to a held object) is more flexible than "is-a" (locking behavior in at compile time), because composed behavior can be swapped at runtime. Most patterns are clever applications of these two ideas.</div>
-
-  <h2 class="section" id="dp-creational">Creational patterns</h2>
-  <p>Concerned with <em>how objects get made</em> &mdash; decoupling a system from the specifics of what it instantiates.</p>
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Use when…</th></tr>
-    <tr><td><strong>Abstract Factory</strong></td><td>Create families of related objects without naming concrete classes.</td><td>You must support multiple product families (e.g., per-platform drivers) interchangeably.</td></tr>
-    <tr><td><strong>Builder</strong></td><td>Separate construction of a complex object from its representation.</td><td>An object needs many optional/step-wise configuration parameters.</td></tr>
-    <tr><td><strong>Factory Method</strong></td><td>Defer instantiation to subclasses via an overridable creation method.</td><td>A class can't anticipate which concrete type it must create.</td></tr>
-    <tr><td><strong>Prototype</strong></td><td>Create new objects by cloning an existing instance.</td><td>Instantiation is costly or the concrete type is decided at runtime.</td></tr>
-    <tr><td><strong>Singleton</strong></td><td>Ensure one instance with a global access point.</td><td>Exactly one resource (a clock, a HAL, a config). <em>Use sparingly &mdash; it's global state.</em></td></tr>
-  </table>
-
-  <h2 class="section" id="dp-structural">Structural patterns</h2>
-  <p>Concerned with <em>how objects are composed</em> into larger structures while keeping them flexible.</p>
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Use when…</th></tr>
-    <tr><td><strong>Adapter</strong></td><td>Convert one interface into another the client expects.</td><td>Wrapping an existing class/driver whose API doesn't match.</td></tr>
-    <tr><td><strong>Bridge</strong></td><td>Decouple an abstraction from its implementation so both vary independently.</td><td>A class hierarchy would otherwise explode along two dimensions.</td></tr>
-    <tr><td><strong>Composite</strong></td><td>Treat individual objects and groups uniformly via a tree.</td><td>Part&ndash;whole hierarchies (menus, widget trees).</td></tr>
-    <tr><td><strong>Decorator</strong></td><td>Add responsibilities to an object dynamically by wrapping it.</td><td>You want layered, opt-in behavior without subclass explosion.</td></tr>
-    <tr><td><strong>Facade</strong></td><td>Provide a simple unified interface to a complex subsystem.</td><td>Hiding a tangle of modules behind one entry point.</td></tr>
-    <tr><td><strong>Flyweight</strong></td><td>Share fine-grained objects to save memory.</td><td>Huge numbers of similar objects with shared intrinsic state.</td></tr>
-    <tr><td><strong>Proxy</strong></td><td>A stand-in that controls access to another object.</td><td>Lazy loading, access control, or remote/hardware access.</td></tr>
-  </table>
-
-  <h2 class="section" id="dp-behavioral">Behavioral patterns</h2>
-  <p>Concerned with <em>how objects communicate</em> and how responsibilities are assigned.</p>
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Use when…</th></tr>
-    <tr><td><strong>Chain of Responsibility</strong></td><td>Pass a request along a chain until one handler takes it.</td><td>Multiple potential handlers; sender shouldn't know which.</td></tr>
-    <tr><td><strong>Command</strong></td><td>Encapsulate a request as an object.</td><td>Queues, undo/redo, deferred or logged operations.</td></tr>
-    <tr><td><strong>Interpreter</strong></td><td>Represent a grammar and evaluate sentences in it.</td><td>A small, well-defined language needs evaluating.</td></tr>
-    <tr><td><strong>Iterator</strong></td><td>Access elements of a collection sequentially without exposing its internals.</td><td>Traversing any container uniformly (the STL idea).</td></tr>
-    <tr><td><strong>Mediator</strong></td><td>Centralize complex communication between objects.</td><td>Many-to-many object coupling needs taming.</td></tr>
-    <tr><td><strong>Memento</strong></td><td>Capture/restore an object's state without breaking encapsulation.</td><td>Snapshots, checkpoints, undo.</td></tr>
-    <tr><td><strong>Observer</strong></td><td>Notify dependents automatically when a subject changes (publish/subscribe).</td><td>Event systems, data-binding, sensor updates.</td></tr>
-    <tr><td><strong>State</strong></td><td>Let an object change behavior when its internal state changes.</td><td>Explicit, maintainable finite-state machines.</td></tr>
-    <tr><td><strong>Strategy</strong></td><td>Encapsulate interchangeable algorithms behind one interface.</td><td>Selecting an algorithm/policy at runtime.</td></tr>
-    <tr><td><strong>Template Method</strong></td><td>Define an algorithm's skeleton, deferring steps to subclasses.</td><td>Fixed workflow with customizable steps.</td></tr>
-    <tr><td><strong>Visitor</strong></td><td>Add operations to a structure without changing its classes.</td><td>New operations over a stable set of element types.</td></tr>
-  </table>
-
-  <h2 class="section" id="dp-strategy">Worked example: Strategy</h2>
-  <p>Strategy turns a family of algorithms into interchangeable objects &mdash; the textbook application of "program to an interface" and "composition over inheritance":</p>
-  <pre class="ascii">  Context  -------has-a------&gt;  &lt;&lt;interface&gt;&gt; Strategy
-  (holds a Strategy*)                  + execute()
-                                            ^
-                       .--------------------+--------------------.
-                  ConcreteA            ConcreteB            ConcreteC
-                 (algorithm 1)        (algorithm 2)        (algorithm 3)</pre>
-  <pre><code class="language-cpp">struct Compressor {                 // the interface
-    virtual ~Compressor() = default;
-    virtual std::vector&lt;byte&gt; compress(const std::vector&lt;byte&gt;&amp;) = 0;
-};
-
-struct RleCompressor  : Compressor { /* run-length */ };
-struct Lz77Compressor : Compressor { /* dictionary */ };
-
-class Logger {                      // the context — composes a strategy
-    Compressor* algo_;             // depends on the abstraction, not a concrete class
-public:
-    explicit Logger(Compressor* a) : algo_(a) {}
-    void setStrategy(Compressor* a) { algo_ = a; }   // swap at runtime
-    void flush(const std::vector&lt;byte&gt;&amp; data) { write(algo_-&gt;compress(data)); }
-};</code></pre>
-
-  <h2 class="section" id="dp-observer">Worked example: Observer</h2>
-  <p>One subject, many dependents notified on change &mdash; the basis of event systems and sensor fan-out:</p>
-  <pre class="ascii">                 register()/notify()
-   Subject  ----------------------------&gt;  Observer A   (update())
-   (sensor)  \                              Observer B   (update())
-              '---------------------------&gt;  Observer C   (update())
-        on change -&gt; for each observer: observer.update(state)</pre>
-  <pre><code class="language-cpp">struct Observer { virtual void update(int reading) = 0; };
-
-class Sensor {                              // the subject
-    std::vector&lt;Observer*&gt; observers_;
-    int value_ = 0;
-public:
-    void subscribe(Observer* o)  { observers_.push_back(o); }
-    void set(int v) {                       // state change fans out
-        value_ = v;
-        for (Observer* o : observers_) o-&gt;update(v);
-    }
-};</code></pre>
-  <div class="callout warn"><strong>Embedded caveat.</strong> The classic Observer allocates a dynamic list and calls virtuals from the update site &mdash; on an MCU you often replace the <code>vector</code> with a fixed array of callback slots, and never notify from inside an ISR (set a flag, fan out from the main loop instead).</div>
-
-  <h2 class="section" id="dp-state">Worked example: the State pattern as a clean FSM</h2>
-  <p>State replaces sprawling <code>switch</code>-on-an-enum machines with one object per state, so behavior and transitions live together:</p>
-  <pre><code class="language-cpp">struct Event;
-struct State {
-    virtual ~State() = default;
-    virtual State* handle(const Event&amp;) = 0;   // returns next state (or this)
-};
-
-struct Idle    : State { State* handle(const Event&amp;) override; };
-struct Running  : State { State* handle(const Event&amp;) override; };
-struct Faulted : State { State* handle(const Event&amp;) override; };
-
-class Machine {
-    State* current_;
-public:
-    explicit Machine(State* start) : current_(start) {}
-    void dispatch(const Event&amp; e) { current_ = current_-&gt;handle(e); }
-};</code></pre>
-  <div class="callout"><strong>When to prefer a table instead.</strong> On tiny targets a static transition <em>table</em> (array indexed by <code>[state][event]</code>) is more memory-predictable than one object per state. Same pattern, different trade-off &mdash; pick by code size and clarity.</div>
-
-  <h2 class="section" id="dp-factory">Worked example: Factory Method</h2>
-  <p>Defer "which concrete class" to a creation method, so callers depend only on the product interface:</p>
-  <pre><code class="language-cpp">struct Transport { virtual void send(const Frame&amp;) = 0; };
-
-class Endpoint {                            // the creator
-public:
-    virtual Transport* makeTransport() = 0; // the factory method
-    void ship(const Frame&amp; f) {             // works against the abstraction
-        Transport* t = makeTransport();
-        t-&gt;send(f);
-    }
-};
-
-class CanEndpoint : public Endpoint {
-    Transport* makeTransport() override { return new CanTransport(); }
-};</code></pre>
-
-  <h2 class="section" id="dp-book-gof">Study guide: <em>Design Patterns: Elements of Reusable Object-Oriented Software</em></h2>
-  <p class="book-meta">Erich Gamma, Richard Helm, Ralph Johnson &amp; John Vlissides ("the Gang of Four") &middot; Addison-Wesley, 1994 &middot; ~395 pp. The book that gave the industry a shared vocabulary for design. (Overview below is a study companion in our own words, following the book's structure &mdash; not a substitute for the book.)</p>
-  <div class="callout tip"><strong>The big idea.</strong> Good designs recur. Rather than reinvent them, name them. Each pattern is documented with a fixed template &mdash; <strong>Intent, Motivation, Applicability, Structure, Participants, Collaborations, Consequences, Implementation, Sample Code, Known Uses, Related Patterns</strong> &mdash; so you can compare and combine them. A pattern is not code you paste; it's a design you adapt.</div>
-  <h3>How the book is organized</h3>
-  <table>
-    <tr><th>Ch.</th><th>Title</th><th>What you take away</th></tr>
-    <tr><td>1</td><td>Introduction</td><td>What a pattern is; the template; the two core principles (interface-not-implementation, composition-over-inheritance).</td></tr>
-    <tr><td>2</td><td>A Case Study: a Document Editor</td><td>Patterns shown working together to build one real system (Lexi), the best argument for why they compose.</td></tr>
-    <tr><td>3</td><td>Creational Patterns</td><td>The 5 patterns for flexible object creation.</td></tr>
-    <tr><td>4</td><td>Structural Patterns</td><td>The 7 patterns for composing objects into bigger structures.</td></tr>
-    <tr><td>5</td><td>Behavioral Patterns</td><td>The 11 patterns for assigning responsibility and communication.</td></tr>
-    <tr><td>6</td><td>Conclusion</td><td>What patterns give you (a shared vocabulary), and how the catalog should grow.</td></tr>
-  </table>
-  <h3>The classification grid the book drills in</h3>
-  <table>
-    <tr><th>Scope \ Purpose</th><th>Creational</th><th>Structural</th><th>Behavioral</th></tr>
-    <tr><td><strong>Class</strong> (inheritance, compile-time)</td><td>Factory Method</td><td>Adapter (class)</td><td>Interpreter, Template Method</td></tr>
-    <tr><td><strong>Object</strong> (composition, run-time)</td><td>Abstract Factory, Builder, Prototype, Singleton</td><td>Adapter (object), Bridge, Composite, Decorator, Facade, Flyweight, Proxy</td><td>Chain of Resp., Command, Iterator, Mediator, Memento, Observer, State, Strategy, Visitor</td></tr>
-  </table>
-
-  <h2 class="section" id="dp-embedded">Why patterns matter for firmware</h2>
-  <ul>
-    <li><strong>State</strong> and <strong>Strategy</strong> are the everyday firmware patterns &mdash; clean FSMs and swappable control/encoding policies without giant <code>switch</code> ladders.</li>
-    <li><strong>Observer</strong> models sensor/event fan-out; <strong>Command</strong> backs deferred-work queues and undoable actions; <strong>Adapter</strong> and <strong>Facade</strong> tame vendor HALs behind your own clean interface.</li>
-    <li><strong>Factory Method</strong> / <strong>Abstract Factory</strong> select per-board or per-bus drivers at startup; <strong>Singleton</strong> guards the one true clock or HAL (carefully &mdash; it's global state).</li>
-    <li>The catch: virtuals, dynamic allocation, and exceptions carry cost. Embedded code keeps the <em>shape</em> of a pattern but often swaps the mechanism &mdash; fixed arrays for vectors, transition tables for polymorphic states, function pointers for full vtables.</li>
-  </ul>
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> name the problem before reaching for a pattern; program to an interface and favor composition; a pattern is a starting point you adapt, not boilerplate to copy; don't over-engineer &mdash; the simplest thing that works beats a pattern you don't need; and on constrained targets keep the pattern's intent while choosing a cheaper mechanism.</div>
 </main>
 </div>
 </div>
@@ -1617,11 +979,6 @@ class CanEndpoint : public Endpoint {
         <li><a href="#net-autoeth">Automotive Ethernet (BASE-T1)</a></li>
         <li><a href="#net-switch">Switches: Marvell / Broadcom</a></li>
         <li><a href="#net-tsn">VLANs &amp; TSN</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">Study Guide</span>
-      <ul>
-        <li><a href="#net-book-tcpip">TCP/IP Illustrated, Vol. 1 (Stevens)</a></li>
       </ul>
     </li>
   </ul>
@@ -1908,24 +1265,6 @@ class CanEndpoint : public Endpoint {
   <div class="callout tip">
     <strong>The big picture:</strong> TSN + automotive Ethernet + gPTP together replace the dedicated deterministic buses (FlexRay, CAN) with one converged, time-synchronized Ethernet fabric. That is why time synchronization (next tab) is not a niche topic — it is the heartbeat the whole deterministic network is scheduled around.
   </div>
-
-  <h2 class="section" id="net-book-tcpip">Study guide: <em>TCP/IP Illustrated, Vol. 1</em> &mdash; W. Richard Stevens</h2>
-  <p class="book-meta">Addison-Wesley &middot; subtitle <em>"The Protocols."</em> The definitive packet-level tour of the Internet protocols. "Illustrated" = it teaches by showing real traffic captures, byte by byte. (Overview below is a study companion in our own words, not a substitute for the book.)</p>
-
-  <div class="callout tip"><strong>The big idea.</strong> You understand the network by watching actual packets. Each layer wraps the one above (encapsulation) and is demultiplexed on the way up by protocol numbers and ports. Reliability (TCP) is built entirely on top of an unreliable, best-effort datagram service (IP).</div>
-
-  <h3>Concepts that matter</h3>
-  <ul>
-    <li><strong>The layered model &amp; encapsulation.</strong> Link &rarr; IP &rarr; transport &rarr; application; each adds a header. Demux on receive uses EtherType, IP protocol field, and port numbers.</li>
-    <li><strong>Link layer &amp; ARP.</strong> Ethernet framing, and how ARP maps an IP address to a MAC on the local segment (and why that's only link-local).</li>
-    <li><strong>IP.</strong> Addressing and subnetting, the best-effort/connectionless model, routing decisions (direct vs. via gateway), TTL, and fragmentation/reassembly with the MTU.</li>
-    <li><strong>ICMP.</strong> The control/error channel &mdash; how ping and traceroute actually work (echo, time-exceeded, unreachable).</li>
-    <li><strong>UDP.</strong> A thin wrapper over IP: ports + checksum, no delivery guarantees. Cheap and stateless &mdash; the baseline transport.</li>
-    <li><strong>TCP, the centerpiece.</strong> Three-way handshake (SYN, SYN-ACK, ACK) and teardown (FIN/FIN-ACK); the connection state machine; sequence/ACK numbers; the <em>sliding window</em> for flow control; and congestion control: slow start, congestion avoidance, fast retransmit, and fast recovery. Plus the practical details &mdash; RTO timers, Nagle's algorithm, delayed ACKs, and why they sometimes interact badly.</li>
-    <li><strong>DNS &amp; services.</strong> Name resolution and how application protocols ride on top of TCP/UDP.</li>
-  </ul>
-
-  <div class="callout"><strong>Rules of thumb to memorize:</strong> every layer encapsulates the next; IP is best-effort, TCP makes it reliable; ports + IP + protocol identify a flow; the 3-way handshake opens, FINs close; and when in doubt, capture the packets and read the trace.</div>
 </main>
 </div>
 </div>
@@ -1963,13 +1302,6 @@ class CanEndpoint : public Endpoint {
       <ul>
         <li><a href="#ts-gptp">802.1AS / gPTP</a></li>
         <li><a href="#ts-profiles">Other profiles &amp; practice</a></li>
-      </ul>
-    </li>
-    <li><span class="group-title">802.1AS-2020 Deep Dive</span>
-      <ul>
-        <li><a href="#ts-as2020">gPTP vs 1588 &amp; the standard</a></li>
-        <li><a href="#ts-as-pdelay">Peer-delay &amp; rateRatio math</a></li>
-        <li><a href="#ts-deploy">PTP in deployment</a></li>
       </ul>
     </li>
   </ul>
@@ -2200,67 +1532,6 @@ ethtool -T eth0          # shows hardware timestamping capabilities</code></pre>
   <div class="callout tip">
     <strong>Tie it together.</strong> gPTP provides the shared clock (802.1AS); the time-aware shaper (802.1Qbv) uses that clock to open transmission gates at exact instants; the result is a converged Ethernet network that carries best-effort traffic <em>and</em> hard-real-time control on the same wire. Time sync is the keystone of deterministic networking.
   </div>
-
-  <h2 class="section" id="ts-as2020">802.1AS-2020 deep dive: how gPTP constrains 1588</h2>
-  <p class="book-meta">Source: <em>IEEE Std 802.1AS-2020 &mdash; Timing and Synchronization for Time-Sensitive Applications</em> (421 pp.). The section above introduced gPTP; this one goes to the standard itself for the precise model. gPTP is a profile of IEEE 1588, but a much <em>tighter</em> one &mdash; that tightness is what buys deterministic, bounded behavior.</p>
-
-  <h3>Only two instance types (vs. 1588's four clock types)</h3>
-  <p>IEEE 1588-2019 defines Ordinary Clocks, Boundary Clocks, end-to-end Transparent Clocks, and P2P Transparent Clocks. 802.1AS collapses this to just two <strong>PTP Instances</strong>, which makes every node's behavior predictable:</p>
-  <table>
-    <tr><th>gPTP instance</th><th>Maps to 1588</th><th>Role</th></tr>
-    <tr><td><strong>PTP End Instance</strong></td><td>Ordinary Clock</td><td>An endpoint: either the source of time (grandmaster-capable) or a consumer (end station).</td></tr>
-    <tr><td><strong>PTP Relay Instance</strong></td><td>A tightly-defined Boundary Clock</td><td>A time-aware bridge. The standard proves it is <em>mathematically equivalent to a P2P Transparent Clock</em> for how sync is performed, yet it still runs the BMCA and has port states.</td></tr>
-  </table>
-  <div class="callout"><strong>The key constraint:</strong> a gPTP domain consists <em>only</em> of PTP Instances &mdash; there are no non-aware relays. Every hop measures its own link delay and residence time and adds them to the correction field, so the accumulated path delay is exact. (In plain 1588 you may put non-1588 switches in the path, which adds unbounded jitter and wander &mdash; gPTP forbids this.)</div>
-
-  <h3>Media-independent + media-dependent sublayers</h3>
-  <p>gPTP splits the protocol so one timing domain can span very different physical networks. A <strong>media-independent</strong> sublayer runs the common logic (BMCA, state machines, time computation); a <strong>media-dependent</strong> sublayer handles each medium's specifics:</p>
-  <pre class="ascii">          +------------------------------------------------+
-          |   Media-independent sublayer (common gPTP)     |
-          |   BMCA · port state machines · time math       |
-          +------------------------------------------------+
-          |  MD sublayer (per medium)                      |
-          |  802.3 full-duplex | 802.11 | EPON | CSN       |
-          +------------------------------------------------+
-   one gPTP domain, transported natively over IEEE 802 MAC PDUs (Layer 2)</pre>
-
-  <h3>Syntonization vs synchronization, and residence time</h3>
-  <ul>
-    <li><strong>Synchronization</strong> = agreeing on the <em>same time value</em>. <strong>Syntonization</strong> = running at the <em>same rate</em> (frequency) even if the offset differs. gPTP does both; rate alignment is what keeps error from accumulating between Sync messages.</li>
-    <li><strong>rateRatio / neighborRateRatio</strong> &mdash; each instance measures how fast its neighbor's clock runs relative to its own, and corrects for it. This is why a chain of relays doesn't drift hop-by-hop.</li>
-    <li><strong>Residence time</strong> &mdash; the time a Sync message spends <em>inside</em> a relay. The relay measures it and adds it (plus the link delay) to the message's correction field, so the endpoint can subtract the entire path's contribution.</li>
-  </ul>
-
-  <h2 class="section" id="ts-as-pdelay">Peer-delay &amp; rateRatio math</h2>
-  <p>The earlier "offset &amp; delay math" section covered the master&ndash;slave Sync exchange. gPTP additionally measures each <em>link's</em> delay continuously with a four-timestamp peer-delay handshake between directly-connected neighbors:</p>
-  <pre class="ascii">  Initiator                         Responder
-     |  Pdelay_Req  ───────────────▶  |   t1 = send (initiator)
-     |                                |   t2 = receive (responder)
-     |  ◀─────────── Pdelay_Resp      |   t3 = send (responder)
-     |  ◀──── Pdelay_Resp_Follow_Up   |   t4 = receive (initiator)
-     |                                |
-   meanLinkDelay = [ (t4 - t1) - (t3 - t2) * rateRatio ] / 2</pre>
-  <p>The round trip <code>(t4&nbsp;&minus;&nbsp;t1)</code> minus the responder's turnaround <code>(t3&nbsp;&minus;&nbsp;t2)</code> leaves twice the one-way link delay; halving gives <code>meanLinkDelay</code>. Multiplying the turnaround by <code>rateRatio</code> corrects for the two clocks ticking at slightly different rates. Each relay feeds its <code>meanLinkDelay</code> into the correction field, so the grandmaster's time arrives at the endpoint already adjusted for every link and every relay it traversed.</p>
-  <div class="callout"><strong>Why peer-delay, not end-to-end:</strong> measuring link-by-link means a link's delay is known locally and stays valid no matter how the sync tree is rooted &mdash; so when the BMCA re-elects a grandmaster, the delay measurements don't have to start over.</div>
-
-  <h2 class="section" id="ts-deploy">PTP in deployment &amp; troubleshooting</h2>
-  <p class="book-meta">Practical context drawn from SynchroNet, <em>Mastering Precision Time Protocol</em> (2025), alongside the standard.</p>
-  <p>Beyond the protocol, real PTP deployments live or die on the grandmaster's time source and on keeping switches honest:</p>
-  <ul>
-    <li><strong>The grandmaster is fed by GNSS.</strong> A PTP grandmaster typically locks to a GPS/GNSS antenna for absolute time and rides a stable internal oscillator (OCXO/rubidium) to hold over during signal loss &mdash; this is the "stratum-0" source the whole network inherits.</li>
-    <li><strong>Boundary vs transparent clocks in the path.</strong> A <em>boundary clock</em> terminates and regenerates timing (reducing load on the grandmaster); a <em>transparent clock</em> forwards timing messages while adding its own measured delay &mdash; both fight the jitter and packet-delay-variation that destroy accuracy. (gPTP's relay instance is the tightly-specified equivalent.)</li>
-    <li><strong>Use PTPv2 with hardware timestamping.</strong> Software timestamps drift with OS scheduling; switches/NICs with timestamping hardware (the same PHC idea from the section above) are what take PTP from milliseconds to sub-microsecond.</li>
-    <li><strong>Monitoring &amp; troubleshooting:</strong> watch offset and delay-variation readings on dashboards; alert on unusual delays; verify GNSS lock and oscillator health; and check cabling/firmware on boundary and transparent devices when sync degrades.</li>
-  </ul>
-  <table>
-    <tr><th>Industry</th><th>Why sub-microsecond PTP</th></tr>
-    <tr><td>Finance / trading</td><td>Precise trade ordering and timestamping (regulatory).</td></tr>
-    <tr><td>Power grids</td><td>Rapid fault detection and synchrophasor measurement.</td></tr>
-    <tr><td>Broadcast / pro-AV</td><td>Frame-aligned media feeds across facilities.</td></tr>
-    <tr><td>Telecom (4G/5G)</td><td>Phase alignment of cell towers for clean handoffs.</td></tr>
-    <tr><td>Automotive / robotics</td><td>Sensor fusion: lidar, radar, and cameras on one timebase (gPTP/TSN).</td></tr>
-  </table>
-  <div class="callout warn"><strong>NTP vs PTP, in one line:</strong> NTP gets you milliseconds in software over the open internet; PTP gets you sub-microsecond on a controlled LAN <em>with hardware timestamping</em>. If a few milliseconds is fine, NTP is simpler; if it isn't, you need PTP &mdash; and for bounded, deterministic delivery, gPTP/TSN.</div>
 </main>
 </div>
 </div>

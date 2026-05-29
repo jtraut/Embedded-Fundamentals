@@ -1,20 +1,31 @@
 # Embedded Firmware Engineer Fundamentals
 
-A single-page reference guide covering the core knowledge areas for embedded firmware and software engineers.
+A single-page reference guide covering the core knowledge areas for embedded firmware and software engineers. Includes deep dives, code examples, and study guides for key textbooks.
 
-## Contents
+**Live site:** https://jtraut.github.io/Embedded-Fundamentals/
 
-- **C / C++ Fundamentals** — memory layout, pointers, type sizes, volatile/const, bit manipulation
-- **RTOS & Concurrency** — tasks, scheduling, mutexes, semaphores, queues, priority inversion
-- **Hardware Interfaces** — UART, SPI, I2C, GPIO, ADC/DAC, DMA, interrupts
-- **Memory & Linker** — flash, RAM, stack vs. heap, linker scripts, startup code
-- **Debugging & Toolchain** — GDB, JTAG/SWD, objdump, size, map files, build systems
-- **Bootloaders & OTA** — boot sequence, memory maps, firmware update strategies
-- **Low Power** — sleep modes, clock gating, wake sources, power budgeting
-- **Protocols & Standards** — CAN, USB, Ethernet, Modbus, common embedded patterns
+## Full Guide
 
-## Viewing
+[`Embedded_Firmware_Engineer_Fundamentals.html`](Embedded_Firmware_Engineer_Fundamentals.html) — 7 tabs:
 
-The guide is hosted at **https://jtraut.github.io/Embedded-Fundamentals/**. Navigate to the root and you will be redirected automatically.
+1. **Embedded & Systems** — MCU/SoC/Linux spectrum, bare-metal vs RTOS vs Linux, memory maps & MMIO, registers & bit fields, MMU vs MPU, boot chain, interrupts & ISRs, DMA, concurrency & reentrancy, device drivers, on-board buses (I2C, SPI, UART, CAN), toolchain & linker, debug/power/watchdog. Includes study guides for *Making Embedded Systems* and *Programming Embedded Systems*.
 
-To view locally, open `Embedded_Firmware_Engineer_Fundamentals.html` directly in a browser — no build step required.
+2. **C / C++** — endianness, fixed-width types, alignment & struct packing, bit-fields, serialization, `memcpy` use & misuse, `volatile`, `const`/`static`/`extern`, bit manipulation toolkit, stack/heap/static memory, C vs C++ tradeoffs, C++ features that pay off in embedded, undefined behavior traps. Study guides for K&R, *Data Structures & Algorithm Analysis in C++*, *Accelerated C++*, and *C++ Concurrency in Action*.
+
+3. **Design Patterns & OOP** — four pillars of OOP, SOLID principles, GoF creational/structural/behavioral patterns, worked examples (Strategy, Observer, State machine as FSM, Factory Method). Study guide for *Design Patterns* (GoF).
+
+4. **Networking & OSI** — OSI 7-layer model, TCP/IP stack & encapsulation, TCP vs UDP, unicast/multicast/broadcast, MAC/IP/ARP, Ethernet, Wi-Fi, Cellular, Bluetooth & BLE, Automotive Ethernet, switches & PHYs, VLANs & TSN. Study guide for *TCP/IP Illustrated Vol. 1*.
+
+5. **Time Sync / PTP** — NTP vs PTP, IEEE 1588, clock roles & grandmaster hierarchy, BMCA, sync message exchange, offset & delay math, one-step vs two-step, hardware timestamping, 802.1AS gPTP, 802.1AS-2020 deep dive, peer-delay & rateRatio math, deployment & troubleshooting.
+
+6. **Glossary** — quick-reference definitions across all topic areas.
+
+7. **Interview Q&A** — common interview questions with answers across embedded, C/C++, and networking.
+
+## Basic Guide
+
+[`Embedded_Firmware_Engineer_Fundamentals_Basic.html`](Embedded_Firmware_Engineer_Fundamentals_Basic.html) — a more concise 6-tab version covering the same topic areas (minus the Design Patterns tab) with shorter explanations and fewer code examples. Good as a quick refresher or starting point.
+
+## Viewing Locally
+
+Open either HTML file directly in a browser — no build step or server required.
