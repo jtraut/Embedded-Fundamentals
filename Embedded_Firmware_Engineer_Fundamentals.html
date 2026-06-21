@@ -651,6 +651,16 @@ unsigned datatest(volatile unsigned *pAddress)
     <input class="toc-filter" type="text" placeholder="Filter sections…">
   </div>
   <ul>
+    <li><span class="group-title">Pointers</span>
+      <ul>
+        <li><a href="#cc-ptr-what">What a pointer really is</a></li>
+        <li><a href="#cc-ptr-ops">&amp;, *, and the moves</a></li>
+        <li><a href="#cc-ptr-arrays">Pointers vs arrays</a></li>
+        <li><a href="#cc-ptr-levels">Double pointers &amp; function pointers</a></li>
+        <li><a href="#cc-ptr-speak">How to speak about pointers</a></li>
+        <li><a href="#cc-ptr-pitfalls">The classic bugs</a></li>
+      </ul>
+    </li>
     <li><span class="group-title">Byte Order</span>
       <ul>
         <li><a href="#cc-endian">Little- vs Big-Endian</a></li>
@@ -698,6 +708,82 @@ unsigned datatest(volatile unsigned *pAddress)
     <h1>C / C++ for Firmware</h1>
     <p class="subtitle">The language details that bite at the hardware boundary: byte order, memory layout, <code>volatile</code>, and the discipline that keeps low-level code correct and portable across architectures.</p>
   </header>
+
+  <h2 class="section" id="cc-ptr-what">Pointers deep dive: what a pointer <em>really</em> is</h2>
+  <p>A pointer is the one C concept that pays off everywhere &mdash; and the one most people stay fuzzy on. The fix is a single mental model you can fall back on every time.</p>
+
+  <div class="callout tip">
+    <strong>The analogy: a street of houses.</strong> Picture memory as a long street of identical houses, each with a <em>house number</em> (its address) and <em>something stored inside</em> (its value). A normal variable <code>x</code> is a house: it has contents (say, <code>42</code>) and a number (say, <code>0x1004</code>). A <strong>pointer is a sticky note with a house number written on it.</strong> The note isn't the house and isn't the contents &mdash; it just tells you <em>where to go</em>. "Following the note to that house and looking inside" is <strong>dereferencing</strong>. That's the whole idea; everything else is detail.
+  </div>
+
+  <p>So a pointer is just a variable whose value happens to be an <em>address</em>. It lives in its own house too (the sticky note is itself stored somewhere), and what it holds is the number of another house.</p>
+
+  <pre class="ascii">  memory (the street)            a pointer to x
+  ┌─────────┬────────────┐      ┌─────────┬────────────┐
+  │ address │  contents  │      │ address │  contents  │
+  ├─────────┼────────────┤      ├─────────┼────────────┤
+  │ 0x1004  │    42      │ x    │ 0x2000  │  0x1004    │ p  ← p "points to" x
+  └─────────┴────────────┘      └─────────┴────────────┘
+        ▲                                    │
+        └────────────────────────────────────┘
+              *p  follows the note to 0x1004 and reads 42</pre>
+
+  <h2 class="section" id="cc-ptr-ops">The two operators: <code>&amp;</code> (address-of) and <code>*</code> (dereference)</h2>
+  <p>Only two moves matter, and they're inverses. <code>&amp;</code> reads a house's <em>number</em>; <code>*</code> goes to the number on the note and touches the <em>contents</em>.</p>
+  <pre><code class="language-c">int   x = 42;        /* a house holding 42                       */
+int  *p = &amp;x;        /* p = a note with x's address written on it */
+
+int   y = *p;        /* FOLLOW the note, read contents -> y = 42  */
+*p = 99;             /* FOLLOW the note, change contents -> x is now 99 */
+p = &amp;y;             /* rewrite the note: p now points at y instead */</code></pre>
+  <div class="callout"><strong>Read the declaration as a promise about <code>*</code>.</strong> <code>int *p;</code> means "<code>*p</code> is an <code>int</code>" &mdash; i.e. <em>when you follow p, you'll find an int</em>. That's why the type matters: it tells the compiler how many bytes to read at the destination and how to step (see arrays below). The star in the <em>declaration</em> and the star in <em>usage</em> are the same idea: "the thing p points to."</div>
+
+  <h2 class="section" id="cc-ptr-arrays">Pointers vs arrays &mdash; two views of the same street</h2>
+  <p>An array name is, in most expressions, just the address of its first house. That's why indexing and pointer arithmetic are the same operation written two ways:</p>
+  <pre><code class="language-c">int a[4] = {10, 20, 30, 40};
+int *p   = a;          /* same as &amp;a[0]: address of the first element */
+
+a[2];                  /* 30 */
+*(p + 2);              /* 30 — identical: "go 2 houses down, look inside" */</code></pre>
+  <p>Pointer arithmetic counts <em>elements, not bytes</em>: <code>p + 1</code> moves by <code>sizeof(*p)</code> &mdash; one whole house, whatever its size. That's the entire reason a pointer has a type.</p>
+  <div class="callout warn"><strong>Where the analogy needs a footnote.</strong> An array is a <em>row of houses</em> you own; a pointer is <em>a note</em>. They feel alike because the note usually holds the first house's number &mdash; but <code>sizeof(a)</code> is the whole row, while <code>sizeof(p)</code> is just the note (4 or 8 bytes). And you can rewrite a note (<code>p = &amp;y</code>) but you can't move a row of houses (<code>a = ...</code> is illegal).</div>
+
+  <h2 class="section" id="cc-ptr-levels">Going up a level: double pointers &amp; function pointers</h2>
+  <p>The model still holds when the contents of a house are <em>themselves</em> a note:</p>
+  <ul>
+    <li><strong>Pointer to pointer (<code>int **pp</code>)</strong> &mdash; a note whose house contains another note. You need it when a function must change <em>which house</em> a caller's pointer points to (e.g. allocating and handing back a buffer). Follow it twice: <code>**pp</code>.</li>
+    <li><strong>Pointer to <code>const</code> vs <code>const</code> pointer</strong> &mdash; read right-to-left. <code>const int *p</code> = "pointer to const int": you can move the note but not edit the contents. <code>int *const p</code> = "const pointer to int": you can edit the contents but the note is glued down. <code>const int *const p</code> = neither.</li>
+    <li><strong>Function pointer</strong> &mdash; a note holding the address of <em>code</em> instead of data. This is how you build callback tables, ISR vectors, and the Strategy/State patterns: <code>void (*handler)(int) = &amp;on_event;</code> then call with <code>handler(5)</code>.</li>
+  </ul>
+  <pre><code class="language-c">void  alloc_buf(char **out) { *out = malloc(64); }  /* change caller's note */
+char *buf;
+alloc_buf(&amp;buf);            /* pass the note's address so the fn can rewrite it */
+
+int  (*op)(int, int) = &amp;add;    /* note pointing at a function   */
+int   r = op(2, 3);             /* call through it -> add(2, 3)   */</code></pre>
+
+  <h2 class="section" id="cc-ptr-speak">How to <em>speak</em> about pointers</h2>
+  <p>Clear speech comes from clear vocabulary. Map each symbol to a fixed phrase and narrate left to right:</p>
+  <table>
+    <tr><th>Code</th><th>Say out loud</th></tr>
+    <tr><td><code>int *p;</code></td><td>"p is a pointer to int" (following p lands on an int).</td></tr>
+    <tr><td><code>p = &amp;x;</code></td><td>"p holds the address of x" / "p points to x."</td></tr>
+    <tr><td><code>*p</code></td><td>"the value p points to" / "the int at p."</td></tr>
+    <tr><td><code>&amp;x</code></td><td>"the address of x."</td></tr>
+    <tr><td><code>p->field</code></td><td>"the field of the struct p points to." (<code>p-&gt;f</code> is just <code>(*p).f</code>.)</td></tr>
+    <tr><td><code>pp = &amp;p;</code></td><td>"pp points to the pointer p."</td></tr>
+  </table>
+  <div class="callout tip"><strong>Interview-ready framing:</strong> "A pointer holds the <em>address</em> of a value rather than the value itself. <code>&amp;</code> gets an address, <code>*</code> follows one. Its type tells the compiler what's at the destination and how big a step pointer arithmetic takes. Passing a pointer lets a function read or modify the caller's data in place instead of working on a copy." If you can say that cold, you're past the hump.</div>
+
+  <h2 class="section" id="cc-ptr-pitfalls">The classic bugs &mdash; named, so you can spot them</h2>
+  <ul>
+    <li><strong>Null pointer dereference.</strong> Following a note that says "nowhere" (<code>NULL</code>/address 0). Always check before you follow: <code>if (p) { ... *p ... }</code>.</li>
+    <li><strong>Dangling pointer.</strong> A note pointing at a house that's been demolished &mdash; a freed heap block, or a local variable that went out of scope. The note still reads fine; the contents are garbage. Set pointers to <code>NULL</code> after <code>free</code>.</li>
+    <li><strong>Uninitialized ("wild") pointer.</strong> A note with random digits on it; following it hits a random house. Initialize at declaration.</li>
+    <li><strong>Memory leak.</strong> You built a house (<code>malloc</code>) and then threw away the only note to it &mdash; it's now unreachable but still occupied. Every <code>malloc</code> needs an owner responsible for <code>free</code>.</li>
+    <li><strong>Off-by-one / out-of-bounds.</strong> Walking one house past the row. Pointer arithmetic won't stop you; you must.</li>
+  </ul>
+  <div class="callout warn"><strong>Embedded angle.</strong> On an MCU a wild or dangling pointer doesn't politely crash &mdash; it can clobber a hardware register or another task's memory and cause a fault much later, far from the bug. This is exactly why firmware leans on static allocation, <code>const</code>-correctness, and bounds discipline. (The memory-mapped-register idioms in the Barr study guide below are pointers in their most literal form: a pointer to a fixed physical address.)</div>
 
   <h2 class="section" id="cc-endian">Little-Endian vs Big-Endian</h2>
   <p><strong>Endianness</strong> is the order in which the bytes of a multi-byte value are stored in memory. It only matters for values larger than one byte (a single <code>char</code> has no order). Take the 32-bit value <code>0x0A0B0C0D</code> stored at address <code>0x100</code>:</p>
