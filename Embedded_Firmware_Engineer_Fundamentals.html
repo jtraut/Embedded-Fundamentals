@@ -482,6 +482,44 @@ With DMA:     Peripheral ───────────────→ RAM   
     <li><strong>Reentrancy.</strong> A function safe to call from both the main loop and an ISR must not rely on shared static state. Prefer pure functions and pass state explicitly.</li>
   </ul>
 
+  <h3>RTOS primitives: mutex vs binary semaphore vs counting semaphore vs queue</h3>
+  <p>Every RTOS (FreeRTOS, Zephyr, ThreadX) exposes the same four primitives under different names. Picking the right one is really answering two questions: <em>does this need ownership</em>, and <em>am I moving data or just a signal</em>?</p>
+  <table>
+    <tr><th>Primitive</th><th>Ownership?</th><th>Carries data?</th><th>Reach for it when&hellip;</th></tr>
+    <tr><td><strong>Mutex</strong></td><td>Yes &mdash; locker must unlock; supports priority inheritance</td><td>No</td><td>Protecting a shared data structure or peripheral from concurrent access between tasks</td></tr>
+    <tr><td><strong>Binary semaphore</strong></td><td>No</td><td>No &mdash; just a 0/1 signal</td><td>Signaling across contexts with no owner &mdash; classically an ISR waking a task</td></tr>
+    <tr><td><strong>Counting semaphore</strong></td><td>No</td><td>No &mdash; a count of available "somethings"</td><td>Tracking N interchangeable resources (buffer pool slots, permitted concurrent DMA transfers)</td></tr>
+    <tr><td><strong>Queue</strong></td><td>No</td><td>Yes &mdash; actual items, FIFO (or priority)</td><td>Moving data between tasks, or between an ISR and a task, with built-in backpressure</td></tr>
+  </table>
+  <p>The same C-level primitives (pthread mutexes, condition variables, POSIX semaphores) are covered in depth on the C/C++ tab; an RTOS just gives them ISR-safe variants because an interrupt handler can't block.</p>
+
+  <h4>ISR-to-task handoff: binary semaphore</h4>
+  <pre><code class="language-c">SemaphoreHandle_t dataReadySem;
+
+void DMA1_Stream0_IRQHandler(void) {              // ISR context — never blocks
+    BaseType_t higherPrioWoken = pdFALSE;
+    clear_dma_interrupt_flag();
+    xSemaphoreGiveFromISR(dataReadySem, &amp;higherPrioWoken);
+    portYIELD_FROM_ISR(higherPrioWoken);          // reschedule immediately if needed
+}
+
+void vProcessingTask(void *arg) {
+    for (;;) {
+        xSemaphoreTake(dataReadySem, portMAX_DELAY);   // sleeps until the ISR posts
+        process_dma_buffer();                           // runs in task context, can block
+    }
+}</code></pre>
+  <div class="callout tip"><strong>Why this pattern exists at all:</strong> the golden ISR rule (above) says never do real work in an interrupt handler. A binary semaphore is the standard way to obey that rule while still reacting to the interrupt immediately &mdash; the ISR does the absolute minimum (clear the flag, signal), and a normal task does the actual processing where it's allowed to block, allocate, and take its time. The <code>FromISR</code> suffix and the explicit <code>higherPrioWoken</code>/<code>portYIELD_FROM_ISR</code> dance are FreeRTOS's way of deferring the reschedule until it's safe to do from interrupt context.</div>
+
+  <h3>Spinlocks: what disabling interrupts becomes on multi-core</h3>
+  <p>Disabling interrupts (above) only protects you against preemption on <em>the core you're running on</em> &mdash; on a multi-core SoC (Cortex-A cluster, SMP Linux, multi-core FreeRTOS/Zephyr) a second core can still touch the same memory at the same instant. The multi-core answer is a <strong>spinlock</strong>: a busy-wait loop on an atomic test-and-set that guarantees mutual exclusion across cores, at the cost of burning cycles while waiting instead of sleeping.</p>
+  <pre><code class="language-c">/* Conceptual spinlock — real code uses a hardware atomic instruction (LDREX/STREX
+   on ARM, or a compiler intrinsic) rather than a plain load and store. */
+volatile int lock = 0;
+void spin_lock(volatile int *l)   { while (__atomic_exchange_n(l, 1, __ATOMIC_ACQUIRE)) { } }
+void spin_unlock(volatile int *l) { __atomic_store_n(l, 0, __ATOMIC_RELEASE); }</code></pre>
+  <div class="callout warn"><strong>Spinlocks are for short critical sections only.</strong> A thread holding a spinlock must never block, sleep, or take a page fault &mdash; every other core waiting on it is burning 100% CPU the entire time. The Linux kernel's own <code>spin_lock()</code> follows this rule strictly; in userspace, a mutex (which puts a waiter to sleep instead of spinning) is almost always the right default, and a spinlock is a deliberate optimization for sections measured in tens of nanoseconds.</div>
+
   <h2 class="section" id="emb-drivers">Device drivers &amp; the kernel boundary</h2>
   <p>On Linux, hardware lives behind <strong>drivers</strong> in kernel space; userspace reaches them through file-like interfaces. The three driver classes:</p>
   <table>
@@ -683,6 +721,17 @@ unsigned datatest(volatile unsigned *pAddress)
         <li><a href="#cc-const">const, static, extern, restrict</a></li>
         <li><a href="#cc-bits">Bit manipulation toolkit</a></li>
         <li><a href="#cc-storage">Memory: stack/heap/static</a></li>
+      </ul>
+    </li>
+    <li><span class="group-title">Concurrency (POSIX)</span>
+      <ul>
+        <li><a href="#cc-conc-intro">Threads, processes &amp; three worlds of concurrency</a></li>
+        <li><a href="#cc-pthread-basics">pthread_create, join &amp; detach</a></li>
+        <li><a href="#cc-pthread-mutex">pthread_mutex_t &amp; deadlock avoidance</a></li>
+        <li><a href="#cc-pthread-cond">Condition variables &amp; spurious wakeups</a></li>
+        <li><a href="#cc-semaphore">Semaphores: sem_t &amp; mutex vs semaphore</a></li>
+        <li><a href="#cc-queue">Queues: mqueue &amp; hand-rolled ring buffers</a></li>
+        <li><a href="#cc-async-sync">Async vs sync: callbacks, futures, event loops</a></li>
       </ul>
     </li>
     <li><span class="group-title">C vs C++</span>
@@ -1109,6 +1158,198 @@ uint32_t rotl32 = (x &lt;&lt; r) | (x &gt;&gt; (32 - r));     // rotate left (r 
   <div class="callout tip">
     <strong>Embedded allocation discipline:</strong> allocate everything you need at startup, then never <code>malloc</code> again. A program whose memory map is fully known at link time cannot run out of memory at 3 a.m. in the field.
   </div>
+
+  <h2 class="section" id="cc-conc-intro">Threads, processes &amp; three worlds of concurrency</h2>
+  <p>A <strong>process</strong> is an isolated address space; a <strong>thread</strong> is a unit of scheduling that shares an address space with its siblings. Two threads in the same process can read and write the same global, the same heap, the same file descriptors &mdash; which is exactly what makes threading fast (no copying, no IPC) and exactly what makes it dangerous (any of them can stomp on the same memory at the same time).</p>
+  <p>Firmware and embedded-adjacent Linux work moves between three distinct concurrency worlds, and interviewers care whether you can place a project in the right one:</p>
+  <table>
+    <tr><th>World</th><th>API</th><th>Runs on</th><th>Typical use</th></tr>
+    <tr><td><strong>POSIX threads</strong></td><td><code>pthread_*</code> (C, <code>&lt;pthread.h&gt;</code>)</td><td>Any Unix/Linux process</td><td>C codebases, legacy/vendor SDKs, anywhere you can't or don't want C++</td></tr>
+    <tr><td><strong>C++11 threading</strong></td><td><code>std::thread</code>, <code>std::mutex</code>, <code>std::atomic</code> (see Study Guide below)</td><td>Any OS with a C++11 runtime</td><td>Modern C++ application code &mdash; on Linux it's a thin RAII wrapper <em>over</em> pthreads</td></tr>
+    <tr><td><strong>RTOS tasks</strong></td><td>FreeRTOS/Zephyr/ThreadX task &amp; IPC API (see Embedded tab)</td><td>Bare MCU, no process boundary at all</td><td>Hard-real-time control loops where you need priority-based preemption, not just "some scheduler somewhere"</td></tr>
+  </table>
+  <div class="callout tip"><strong>The detail that trips people up:</strong> on Linux, <code>std::thread</code> is <em>not</em> a separate mechanism from pthreads &mdash; libstdc++ implements it by calling <code>pthread_create</code> underneath. Knowing pthreads is knowing what's actually happening one layer down every time you write <code>std::thread</code>, and it's the API you reach for the moment you're in a C codebase or on a platform without a C++ runtime.</div>
+
+  <h2 class="section" id="cc-pthread-basics">pthread_create, join &amp; detach</h2>
+  <p>Every pthread starts life as a function pointer with a fixed signature: it takes one <code>void*</code> and returns one <code>void*</code>, so you can pass and return arbitrary data through a cast.</p>
+  <pre><code class="language-c">#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+
+typedef struct { int id; const char *label; } WorkerArgs;
+
+void *worker(void *arg) {
+    WorkerArgs *a = (WorkerArgs *)arg;
+    printf("worker %d (%s) running\n", a-&gt;id, a-&gt;label);
+    int *result = malloc(sizeof(int));
+    *result = a-&gt;id * 10;
+    return result;                       // becomes pthread_join's retval
+}
+
+int main(void) {
+    pthread_t     tid;
+    WorkerArgs    args = { .id = 1, .label = "sensor-poll" };
+
+    if (pthread_create(&amp;tid, NULL, worker, &amp;args) != 0) {
+        perror("pthread_create"); return 1;
+    }
+
+    void *ret;
+    pthread_join(tid, &amp;ret);             // BLOCKS until worker() returns
+    printf("worker returned %d\n", *(int *)ret);
+    free(ret);
+    return 0;
+}</code></pre>
+  <p>Four calls cover most of the API:</p>
+  <ul>
+    <li><code>pthread_create(&amp;tid, attr, start_fn, arg)</code> &mdash; spawn. <code>attr</code> is usually <code>NULL</code> (defaults); pass a configured <code>pthread_attr_t</code> to set stack size, detach state, or scheduling policy up front &mdash; the stack-size override matters a lot on RAM-constrained embedded Linux, where the default multi-MB desktop stack is wildly oversized.</li>
+    <li><code>pthread_join(tid, &amp;retval)</code> &mdash; block until that thread finishes, and collect its return value. This is the "I need the result and I need to know it's done" pattern.</li>
+    <li><code>pthread_detach(tid)</code> &mdash; the opposite contract: "run this and I will never join it." The kernel reclaims the thread's resources automatically on exit instead of leaving a joinable zombie. Use it for fire-and-forget background work where you have no result to collect and no reason to wait.</li>
+    <li><code>pthread_exit(retval)</code> &mdash; a thread can end itself early with this instead of <code>return</code>; equivalent for the main thread body, but callable from deep in a call stack.</li>
+  </ul>
+  <div class="callout bad"><strong>Every joinable thread you don't join or detach is a leak.</strong> Its kernel resources (stack, TLS, exit status) stay allocated until something calls <code>pthread_join</code>. Decide at <code>pthread_create</code> time which contract you're using &mdash; joinable-and-will-join, or detached &mdash; and don't leave it ambiguous.</div>
+
+  <h2 class="section" id="cc-pthread-mutex">pthread_mutex_t &amp; deadlock avoidance</h2>
+  <p>A mutex ("mutual exclusion") lets only one thread at a time execute a protected region. The core contract: <strong>whoever locks it must be the one to unlock it</strong> &mdash; ownership is part of the API, and it's the detail that separates a mutex from a semaphore (next section).</p>
+  <pre><code class="language-c">pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;   // static init, no cleanup needed
+int shared_counter = 0;
+
+void *increment(void *unused) {
+    for (int i = 0; i &lt; 100000; i++) {
+        pthread_mutex_lock(&amp;lock);      // BLOCKS until available
+        shared_counter++;                // the critical section
+        pthread_mutex_unlock(&amp;lock);
+    }
+    return NULL;
+}</code></pre>
+  <p>Dynamically-created mutexes (<code>pthread_mutex_init</code>/<code>pthread_mutex_destroy</code>) let you pick a <strong>type</strong> via <code>pthread_mutexattr_settype</code>:</p>
+  <table>
+    <tr><th>Type</th><th>Behavior on self-relock (same thread locks twice)</th><th>Use when</th></tr>
+    <tr><td><code>PTHREAD_MUTEX_NORMAL</code></td><td>Undefined behavior &mdash; typically deadlocks silently</td><td>Default; fastest; you've proven no recursion</td></tr>
+    <tr><td><code>PTHREAD_MUTEX_RECURSIVE</code></td><td>Succeeds; tracks a lock count, same thread must unlock that many times</td><td>A function that takes the lock might call another function that also takes it</td></tr>
+    <tr><td><code>PTHREAD_MUTEX_ERRORCHECK</code></td><td>Returns <code>EDEADLK</code> instead of hanging</td><td>Debugging &mdash; surfaces the bug instead of hiding it</td></tr>
+  </table>
+  <p><code>pthread_mutex_trylock</code> attempts the lock and returns <code>EBUSY</code> immediately instead of blocking &mdash; useful for polling loops or avoiding a blocking call inside a real-time path.</p>
+  <div class="callout warn"><strong>Deadlock in one sentence: two threads, two locks, opposite order.</strong> Thread A holds lock 1 and wants lock 2; thread B holds lock 2 and wants lock 1; neither ever proceeds. The fix is almost always <strong>consistent lock ordering</strong> &mdash; every thread in the codebase acquires locks in the same global order, so the cycle can't form. Where that's impractical, use <code>pthread_mutex_trylock</code> with a backoff-and-retry, or a single coarser lock. This is the single most common concurrency bug asked about in interviews, and "acquire in a fixed order" is the answer that's expected.</div>
+  <div class="callout"><strong>vs. C++:</strong> <code>std::mutex</code> + <code>std::lock_guard</code> (Study Guide below) is the RAII wrapper over exactly this API &mdash; the guard's destructor calls the equivalent of <code>pthread_mutex_unlock</code> automatically, which is why C++ code rarely deadlocks from a forgotten unlock on an early-return or exception path the way hand-rolled C does.</div>
+
+  <h2 class="section" id="cc-pthread-cond">Condition variables &amp; the spurious-wakeup rule</h2>
+  <p>A mutex alone can't make a thread <em>wait for a condition to become true</em> without busy-polling it (burning CPU, and racing the check against the change). A <strong>condition variable</strong> solves that: a thread atomically unlocks its mutex and sleeps, and wakes back up already holding the mutex when signaled.</p>
+  <pre><code class="language-c">pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  cv = PTHREAD_COND_INITIALIZER;
+int  data_ready = 0;
+
+void *consumer(void *unused) {
+    pthread_mutex_lock(&amp;m);
+    while (!data_ready)                       // NOT "if" — see below
+        pthread_cond_wait(&amp;cv, &amp;m);          // unlocks m, sleeps, relocks m on wake
+    // data_ready is true and m is held here
+    process_data();
+    pthread_mutex_unlock(&amp;m);
+    return NULL;
+}
+
+void *producer(void *unused) {
+    pthread_mutex_lock(&amp;m);
+    prepare_data();
+    data_ready = 1;
+    pthread_cond_signal(&amp;cv);                // wake ONE waiter
+    // pthread_cond_broadcast(&amp;cv);          // wake ALL waiters, if more than one cares
+    pthread_mutex_unlock(&amp;m);
+    return NULL;
+}</code></pre>
+  <div class="callout bad"><strong>Always re-check the predicate in a <code>while</code>, never an <code>if</code>.</strong> POSIX explicitly permits <em>spurious wakeups</em> &mdash; <code>pthread_cond_wait</code> can return with nothing having signaled it. There's also the lost-wakeup race: if the producer signals between the consumer's check and its call to <code>cond_wait</code>, an <code>if</code> would sleep forever, while a <code>while</code> just re-checks and proceeds since it re-tests the shared state under the mutex every time it wakes. This is the #1 pthread bug pattern interviewers probe for.</div>
+  <p><code>pthread_cond_signal</code> wakes at most one waiting thread (use when any one consumer can handle it &mdash; a work queue); <code>pthread_cond_broadcast</code> wakes all of them (use when the condition's truth is relevant to every waiter &mdash; e.g. "shutdown requested").</p>
+
+  <h2 class="section" id="cc-semaphore">Semaphores: <code>sem_t</code>, and mutex vs semaphore</h2>
+  <p>A semaphore is a counter with two atomic operations: <code>sem_wait</code> (decrement; block if the count is already 0) and <code>sem_post</code> (increment; wake a waiter if one is blocked). That's the whole primitive &mdash; and the reason it's more general-purpose than a mutex.</p>
+  <pre><code class="language-c">#include &lt;semaphore.h&gt;
+
+sem_t pool_slots;
+sem_init(&amp;pool_slots, /*pshared=*/0, /*initial value=*/4);  // 4 available buffers
+
+void *worker(void *unused) {
+    sem_wait(&amp;pool_slots);      // take a slot (blocks if all 4 are in use)
+    use_a_buffer();
+    sem_post(&amp;pool_slots);      // return the slot
+    return NULL;
+}</code></pre>
+  <p><code>sem_init</code> creates an <strong>unnamed</strong> semaphore shared between threads in one process (or, with <code>pshared=1</code>, between processes via shared memory); <code>sem_open</code> creates a <strong>named</strong> one identified by a filesystem-like name, for unrelated processes to rendezvous on. <code>sem_trywait</code> is the non-blocking variant, mirroring <code>pthread_mutex_trylock</code>.</p>
+  <table>
+    <tr><th></th><th>Mutex</th><th>Semaphore</th></tr>
+    <tr><td><strong>Ownership</strong></td><td>Yes &mdash; only the locking thread may unlock it</td><td>None &mdash; any thread (or an ISR) may post, regardless of who last waited</td></tr>
+    <tr><td><strong>Purpose</strong></td><td>Mutual exclusion of a critical section</td><td>Signaling ("something happened") or counting ("N resources available")</td></tr>
+    <tr><td><strong>Priority inheritance</strong></td><td>Available (RTOS/pthread priority-protected mutexes) to fight priority inversion</td><td>Not applicable &mdash; there's no owner to inherit priority for</td></tr>
+    <tr><td><strong>Binary case</strong></td><td>A binary semaphore (count 0/1) looks like a mutex but is <em>not</em> one</td><td>Can be posted by a party that never waited &mdash; e.g. an ISR signaling a task</td></tr>
+  </table>
+  <div class="callout tip"><strong>The interview-gotcha version:</strong> can you use a mutex to hand off from an ISR to a task? No &mdash; a mutex must be unlocked by the same context that locked it, and an ISR isn't a schedulable thread with an identity to hand off to a task. A <strong>binary semaphore</strong> has no such ownership rule: the ISR calls <code>sem_post</code> (or the RTOS equivalent, <code>xSemaphoreGiveFromISR</code>), a task blocked on <code>sem_wait</code> wakes up and runs. Signaling across contexts is a semaphore's job; protecting a shared resource within one context is a mutex's job. See the Embedded tab's RTOS primitives table for the same distinction with FreeRTOS's API.</div>
+
+  <h2 class="section" id="cc-queue">Queues: <code>mqueue</code> and hand-rolled bounded ring buffers</h2>
+  <p>A semaphore signals that something happened; a <strong>queue</strong> moves actual data between producer and consumer while handling backpressure (blocking the producer once it's full, blocking the consumer once it's empty). Two ways to get one on Linux:</p>
+  <h4>POSIX message queues (kernel-managed, cross-process)</h4>
+  <pre><code class="language-c">#include &lt;mqueue.h&gt;
+
+struct mq_attr attr = { .mq_maxmsg = 10, .mq_msgsize = 256 };
+mqd_t q = mq_open("/telemetry", O_CREAT | O_RDWR, 0644, &amp;attr);
+
+mq_send(q, buf, len, /*priority=*/0);                 // blocks if full
+ssize_t n = mq_receive(q, buf, sizeof buf, NULL);      // blocks if empty; higher-priority
+                                                        // messages are delivered first
+mq_close(q);
+mq_unlink("/telemetry");                               // remove the queue from the system</code></pre>
+  <p>These are heavier than they look &mdash; kernel objects, visible in the filesystem under <code>/dev/mqueue</code>, meant for IPC between separate processes. For threads inside one process, the far more common interview and real-world pattern is a hand-rolled bounded queue built from exactly the primitives above:</p>
+  <h4>Bounded ring buffer with a mutex + two condition variables</h4>
+  <pre><code class="language-c">#define CAP 16
+typedef struct {
+    int  buf[CAP];
+    int  head, tail, count;
+    pthread_mutex_t m;
+    pthread_cond_t  not_empty, not_full;
+} Queue;
+
+void q_push(Queue *q, int v) {
+    pthread_mutex_lock(&amp;q-&gt;m);
+    while (q-&gt;count == CAP) pthread_cond_wait(&amp;q-&gt;not_full, &amp;q-&gt;m);   // backpressure
+    q-&gt;buf[q-&gt;tail] = v;
+    q-&gt;tail = (q-&gt;tail + 1) % CAP;
+    q-&gt;count++;
+    pthread_cond_signal(&amp;q-&gt;not_empty);
+    pthread_mutex_unlock(&amp;q-&gt;m);
+}
+
+int q_pop(Queue *q) {
+    pthread_mutex_lock(&amp;q-&gt;m);
+    while (q-&gt;count == 0) pthread_cond_wait(&amp;q-&gt;not_empty, &amp;q-&gt;m);
+    int v = q-&gt;buf[q-&gt;head];
+    q-&gt;head = (q-&gt;head + 1) % CAP;
+    q-&gt;count--;
+    pthread_cond_signal(&amp;q-&gt;not_full);
+    pthread_mutex_unlock(&amp;q-&gt;m);
+    return v;
+}</code></pre>
+  <div class="callout"><strong>This is the workhorse pattern.</strong> Every blocking multi-producer/multi-consumer queue &mdash; a logging pipeline, a work-dispatch pool, an RTOS message queue's own internals &mdash; is a variation on this: a mutex around the shared buffer state, one condition variable for "there's room now," one for "there's data now." When throughput matters more than simplicity and you have exactly one producer and one consumer, you can drop the lock entirely with an atomic head/tail SPSC ring buffer &mdash; see the <em>C++ Concurrency in Action</em> Study Guide below for that lock-free version.</div>
+
+  <h2 class="section" id="cc-async-sync">Async vs sync: blocking calls, callbacks, futures &amp; event loops</h2>
+  <p><strong>Synchronous</strong> means the caller blocks until the operation finishes and the result is available before the next line runs &mdash; simple to read, but the calling thread does nothing else while it waits. <strong>Asynchronous</strong> means the call returns immediately and the result (or completion) arrives later &mdash; more moving parts, but the thread is free to do other work in the meantime. Every concurrency choice you make is really a choice about how the "later" part gets communicated back.</p>
+  <table>
+    <tr><th>Model</th><th>How it works</th><th>Trade-off</th></tr>
+    <tr><td><strong>Blocking (sync)</strong></td><td><code>read()</code>/<code>recv()</code> don't return until data exists</td><td>Simplest code; one thread per concurrent operation, or nothing else happens</td></tr>
+    <tr><td><strong>Non-blocking</strong></td><td>Same calls with <code>O_NONBLOCK</code>: return immediately with <code>EAGAIN</code>/<code>EWOULDBLOCK</code> if nothing's ready</td><td>Caller must poll &mdash; wastes CPU if polled too often, adds latency if too rarely</td></tr>
+    <tr><td><strong>Multiplexed (<code>select</code>/<code>poll</code>/<code>epoll</code>)</strong></td><td>One thread blocks on <em>many</em> file descriptors at once, wakes only when one is ready, then services it</td><td>The classic single-threaded async server model &mdash; no per-connection thread, scales to thousands of sockets</td></tr>
+    <tr><td><strong>Callback-driven</strong></td><td>Register a function pointer/closure; it's invoked on completion (signal handler, RTOS callback, epoll dispatch, JS-style event loop)</td><td>No thread sits waiting at all; but control flow becomes non-linear ("callback hell") and error handling gets harder to reason about</td></tr>
+    <tr><td><strong>Futures / promises</strong></td><td>The async call returns a handle to a not-yet-ready result immediately; the caller retrieves the value later with a blocking or pollable call</td><td>Gives async work a synchronous-looking result API &mdash; see <code>std::future</code>/<code>std::async</code> in the Study Guide below</td></tr>
+  </table>
+  <pre><code class="language-c">/* Multiplexed I/O sketch: one thread, many sockets, no per-connection thread */
+struct pollfd fds[MAX_CONNS];
+int nfds = setup_listeners(fds);
+
+for (;;) {
+    poll(fds, nfds, -1);                 // block until ANY fd is ready
+    for (int i = 0; i &lt; nfds; i++)
+        if (fds[i].revents &amp; POLLIN)
+            handle_ready_socket(fds[i].fd);   // dispatch — non-blocking by construction
+}</code></pre>
+  <div class="callout tip"><strong>Async doesn't require threads, and threads don't require async.</strong> A single-threaded <code>epoll</code> loop is fully asynchronous with zero extra threads &mdash; that's how nginx and Node.js get high concurrency from one core. Conversely, a thread pool where each worker makes ordinary blocking calls is a form of async <em>from the caller's point of view</em> (submit work, get a future back) even though every individual worker thread is behaving synchronously. What actually changes between models is <em>where the waiting happens</em>: in the calling thread, in a dedicated poller, or spread across a pool &mdash; not whether waiting happens at all.</div>
+  <div class="callout"><strong>Rules of thumb to memorize:</strong> a joinable pthread you never join or detach leaks; guard every <code>pthread_cond_wait</code> with a <code>while</code>, never an <code>if</code>; reach for a mutex to protect shared state and a semaphore to signal across contexts (especially ISR&harr;task); a hand-rolled queue is a mutex plus two condition variables (not-empty, not-full) around a ring buffer; and non-blocking I/O without a multiplexer (<code>select</code>/<code>poll</code>/<code>epoll</code>) just turns blocking into busy-polling &mdash; it's the event loop, not the <code>O_NONBLOCK</code> flag, that buys you scale.</div>
 
   <h2 class="section" id="cc-cvscpp">C vs C++ — when to use which</h2>
   <table>
