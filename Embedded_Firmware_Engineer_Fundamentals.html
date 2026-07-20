@@ -1133,6 +1133,20 @@ while ((*STATUS &amp; READY) == 0) { }</code></pre>
   </table>
 
   <h2 class="section" id="cc-bits">Bit manipulation toolkit</h2>
+  <p>Everything below is built from six operators. They act on the raw bit pattern of an integer — no sign interpretation, no rounding — which is exactly why they're the language of registers, masks, and protocols.</p>
+  <table>
+    <tr><th>Op</th><th>Name</th><th>Rule</th><th>Example (8-bit)</th></tr>
+    <tr><td><code>&amp;</code></td><td>AND</td><td>Result bit is 1 only if <em>both</em> input bits are 1.</td><td><code>5 &amp; 3</code> &rarr; <code>00000101 &amp; 00000011</code> = <code>00000001</code> (1)</td></tr>
+    <tr><td><code>|</code></td><td>OR</td><td>Result bit is 1 if <em>either</em> input bit is 1.</td><td><code>5 | 3</code> &rarr; <code>00000101 | 00000011</code> = <code>00000111</code> (7)</td></tr>
+    <tr><td><code>^</code></td><td>XOR</td><td>Result bit is 1 if the input bits <em>differ</em> — equivalently, flips (toggles) exactly the bits that are 1 in the operand.</td><td><code>5 ^ 3</code> &rarr; <code>00000101 ^ 00000011</code> = <code>00000110</code> (6)</td></tr>
+    <tr><td><code>~</code></td><td>NOT</td><td>Unary; flips every bit (one's complement). On a signed type the result is reinterpreted via two's complement.</td><td><code>~5</code> &rarr; <code>~00000101</code> = <code>11111010</code> (&minus;6 as a signed <code>int8_t</code>)</td></tr>
+    <tr><td><code>&lt;&lt;</code></td><td>Left shift</td><td>Shifts bits left by <em>n</em>, filling with 0s on the right. Equivalent to <code>&times; 2^n</code> (until bits fall off the top).</td><td><code>5 &lt;&lt; 1</code> &rarr; <code>00000101 &lt;&lt; 1</code> = <code>00001010</code> (10)</td></tr>
+    <tr><td><code>&gt;&gt;</code></td><td>Right shift</td><td>Shifts bits right by <em>n</em>. Unsigned types fill with 0 (logical shift); signed types fill with the sign bit (arithmetic shift, implementation-defined before C23).</td><td><code>5 &gt;&gt; 1</code> &rarr; <code>00000101 &gt;&gt; 1</code> = <code>00000010</code> (2)</td></tr>
+  </table>
+  <div class="callout bad">
+    <strong>Three gotchas that bite firmware specifically:</strong> (1) <code>~x</code> on an unsigned type still flips <em>all</em> bits of that type's width — <code>~(uint8_t)5</code> is <code>0xFA</code>, not a negative number, so don't assume NOT implies sign. (2) Shifting a signed value left such that it overflows, or right-shifting a negative signed value, is implementation-defined/UB in older standards — do bit tricks in <code>unsigned</code>. (3) Shifting by &ge; the operand's bit width (<code>x &lt;&lt; 32</code> on a 32-bit type) is UB, not a no-op or a zero — always mask the shift count.
+  </div>
+  <p>Compound assignment forms (<code>&amp;=</code>, <code>|=</code>, <code>^=</code>, <code>&lt;&lt;=</code>, <code>&gt;&gt;=</code>) are how these show up in real register code — see the set/clear/toggle idiom above and the read-modify-write pattern below.</p>
   <pre><code class="language-c">x |  (1u &lt;&lt; n)         // set bit n
 x &amp; ~(1u &lt;&lt; n)         // clear bit n
 x ^  (1u &lt;&lt; n)         // toggle bit n
